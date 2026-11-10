@@ -289,13 +289,11 @@
       var chip = $('estado-ar');
       if (c.webxr) {
         $('lbl-ar').textContent = 'Ver en AR';
-        chip.textContent = 'AR WebXR disponible · pulsa ◎';
+        chip.textContent = '◎ Ver la mesa en mi habitación (AR)';
         chip.className = 'chip si';
       } else if (c.camara) {
         $('lbl-ar').textContent = 'Cámara';
-        chip.textContent = c.ios
-          ? 'iPhone: sin WebXR · ◎ abre la vista con cámara'
-          : 'Sin WebXR AR · ◎ abre la vista con cámara';
+        chip.textContent = '📷 Abrir la cámara';
         chip.className = 'chip medio';
       } else {
         vistaPedida = null;
@@ -330,6 +328,11 @@
 
     $('btn-ar').addEventListener('click', function () {
       if (enVistaReal()) { ar.salir(); return; }
+      if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
+      abrirVistaReal();
+    });
+    $('estado-ar').addEventListener('click', function () {
+      if (enVistaReal() || $('btn-ar').disabled) return;
       if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
       abrirVistaReal();
     });

@@ -7,33 +7,33 @@
   <meta name="theme-color" content="#07110c">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/estilos.css?v=5">
 
   <!-- Motor: A-Frame 1.6 (incluye Three.js y WebXR). Copia local para que funcione sin CDN. -->
   <script src="vendor/aframe.min.js"></script>
 
   <!-- Núcleo (datos y cálculos, sin dependencia de A-Frame) -->
-  <script src="js/core/config.js"></script>
-  <script src="js/core/rack.js"></script>
-  <script src="js/core/aim.js"></script>
-  <script src="js/core/textures.js"></script>
-  <script src="js/core/geometria-mesa.js"></script>
+  <script src="js/core/config.js?v=5"></script>
+  <script src="js/core/rack.js?v=5"></script>
+  <script src="js/core/aim.js?v=5"></script>
+  <script src="js/core/textures.js?v=5"></script>
+  <script src="js/core/geometria-mesa.js?v=5"></script>
 
   <!-- Física (paso fijo, sin dependencias) -->
-  <script src="js/fisica/motor.js"></script>
+  <script src="js/fisica/motor.js?v=5"></script>
 
   <!-- Componentes A-Frame (arquitectura Entity-Component-System) -->
-  <script src="js/components/escena-realista.js"></script>
-  <script src="js/components/mesa-billar.js"></script>
-  <script src="js/components/bola-billar.js"></script>
-  <script src="js/components/taco-billar.js"></script>
-  <script src="js/components/camara-orbita.js"></script>
-  <script src="js/components/sonido-billar.js"></script>
-  <script src="js/components/fisica-mesa.js"></script>
-  <script src="js/components/modo-ar.js"></script>
+  <script src="js/components/escena-realista.js?v=5"></script>
+  <script src="js/components/mesa-billar.js?v=5"></script>
+  <script src="js/components/bola-billar.js?v=5"></script>
+  <script src="js/components/taco-billar.js?v=5"></script>
+  <script src="js/components/camara-orbita.js?v=5"></script>
+  <script src="js/components/sonido-billar.js?v=5"></script>
+  <script src="js/components/fisica-mesa.js?v=5"></script>
+  <script src="js/components/modo-ar.js?v=5"></script>
 
   <!-- Aplicación: interfaz, controles, preferencias -->
-  <script src="js/ar-app.js"></script>
+  <script src="js/ar-app.js?v=5"></script>
 </head>
 <body class="juego">
   <!-- Imagen de la cámara trasera (solo en "Vista con cámara") -->
@@ -171,7 +171,7 @@
     </section>
 
     <!-- Estado AR -->
-    <div id="estado-ar" class="chip">Comprobando WebXR…</div>
+    <button id="estado-ar" class="chip">Comprobando cámara…</button>
 
     <!-- Mensajes -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

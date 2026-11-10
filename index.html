@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#07110c">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/estilos.css?v=5">
   <style>
     body.inicio {
       min-height: 100%; overflow-x: hidden;
@@ -90,12 +90,12 @@
       </header>
 
       <section class="modos" aria-label="Modos de juego">
-        <a id="btn-real" class="modo principal" href="ar-experiencia.html?vista=camara">
+        <a id="btn-real" class="modo principal" href="ar-experiencia.html?vista=camara&v=5">
           <span id="estado-real" class="estado listo">CÁMARA</span>
           <span id="nombre-real" class="nombre">JUGAR CON CÁMARA</span>
           <span id="desc-real" class="desc">La mesa aparece sobre lo que ve tu cámara. Gira el teléfono para mirarla y tira desde donde estás.</span>
         </a>
-        <a class="modo" href="ar-experiencia.html">
+        <a class="modo" href="ar-experiencia.html?v=5">
           <span class="estado pronto">3D</span>
           <span class="nombre">JUGAR EN 3D</span>
           <span class="desc">Mesa de 9 pies en una sala virtual, con cámara libre, de tiro y vista superior.</span>
@@ -152,7 +152,7 @@
       if (!window.isSecureContext || !navigator.xr) modoCamara();
       else navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
         if (!ok) return modoCamara();
-        document.getElementById('btn-real').href = 'ar-experiencia.html?vista=ar';
+        document.getElementById('btn-real').href = 'ar-experiencia.html?vista=ar&v=5';
         document.getElementById('estado-real').textContent = 'AR';
         document.getElementById('nombre-real').textContent = 'JUGAR EN AR';
         document.getElementById('desc-real').textContent = 'Coloca la mesa sobre el suelo de tu habitación a tamaño real y camina alrededor.';
