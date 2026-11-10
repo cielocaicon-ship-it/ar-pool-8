@@ -1,25 +1,26 @@
 # AR POOL 8 — Realistic Mixed Reality Billiards
 
 Videojuego de pool americano de 8 bolas hecho con **A-Frame 1.6 + Three.js + WebXR**.
-Se desarrolla en 6 etapas; cada una se puede probar sola y no rompe las anteriores.
 
-| Etapa | Contenido | Estado |
-|---|---|---|
-| 1 | Mesa 3D realista, 16 bolas, taco y cámara | ✅ **Terminada** |
-| 2 | Física: colisiones, bandas, troneras, fricción, efecto | ✅ **Terminada** |
-| 3 | Reglas completas de 8 bolas y bot (fácil / normal / difícil) | Pendiente |
-| 4 | Servidor Node.js + Socket.IO, salas y multijugador online | Pendiente |
-| 5 | WebXR AR: hit-test, colocar la mesa, controles XR | ◐ Colocación AR y vista con cámara listas; faltan controladores de gafas |
-| 6 | Pulido gráfico, sonido espacial y optimización | Pendiente |
+## Estado
+
+| Parte | Estado |
+|---|---|
+| Mesa 3D realista, 16 bolas, taco y cámara | ✅ Lista |
+| Física: colisiones, bandas, troneras, fricción, efecto | ✅ Lista |
+| Reglas completas de 8 bolas y bot (fácil / normal / difícil) | Pendiente |
+| Servidor Node.js + Socket.IO, salas y multijugador online | Pendiente |
+| WebXR AR: hit-test, colocar la mesa, controles XR | ◐ Colocación AR y vista con cámara listas; faltan controladores de gafas |
+| Pulido gráfico, sonido espacial y optimización | Pendiente |
 
 > **Ya se puede jugar**: el taco golpea la blanca y la física mueve las 16 bolas (choques, bandas,
 > troneras, fricción del paño y efecto). La blanca embocada vuelve a la cabecera.
-> Las reglas completas de 8 bolas, el bot y el multijugador llegan en las etapas 3 y 4.
+> Las reglas completas de 8 bolas, el bot y el multijugador llegan en próximas versiones.
 
 ## Realidad aumentada: qué funciona en cada teléfono
 
 | Dispositivo | Botón ◎ | Qué hace |
-|---|---|---|
+|---|---|
 | Android con Chrome (ARCore) | **Ver en AR** | **AR real WebXR**: detecta el suelo, aparece un aro verde, tocas la pantalla y la mesa queda anclada a escala real. Puedes caminar alrededor. |
 | Meta Quest / gafas con WebXR | **Ver en AR** | Igual que Android (passthrough). |
 | iPhone / iPad (Safari o Chrome) | **Cámara** | **Vista con cámara**: la cámara trasera es el fondo y el giroscopio mueve la vista. La mesa se queda en su sitio al **girar** el teléfono, pero **no** se ancla al suelo ni sigue tus pasos, porque Apple no ofrece WebXR en el navegador. |
@@ -55,13 +56,13 @@ WebXR y varias funciones del navegador **solo funcionan con HTTPS**. La forma m�
 3. En el repositorio: **Settings → Pages → Branch: main → / (root) → Save**.
 4. Espera 1–2 minutos y abre `https://TU-USUARIO.github.io/ar-pool-8/` en el celular.
 
-GitHub Pages sirve para el **frontend**. El servidor multijugador de la Etapa 4 necesitará
+GitHub Pages sirve para el **frontend**. El servidor multijugador necesitará
 otro servicio que admita WebSockets permanentes (por ejemplo Render o Railway).
 
 ## 3. Controles
 
 | Acción | Computador | Celular |
-|---|---|---|
+|---|---|
 | Girar la cámara | Arrastrar con el ratón (vista libre) | Arrastrar con un dedo |
 | Zoom | Rueda del ratón | Pellizcar con dos dedos |
 | Girar el taco | ← → o A / D (Shift = fino) · arrastrar en vista Tiro/Superior | Botones ◀ ▶ |
@@ -74,7 +75,7 @@ otro servicio que admita WebSockets permanentes (por ejemplo Render o Railway).
 
 Cámaras: **Libre** (orbita la mesa), **Tiro** (cámara de asistencia detrás del taco) y **Superior** (vista cenital).
 
-## 4. Lista de verificación de la Etapa 1
+## 4. Lista de verificación
 
 - [ ] La pantalla de bienvenida muestra **AR POOL 8**, el nombre se guarda al recargar.
 - [ ] La mesa tiene paño verde, madera con vetas, 6 troneras con fondo, diamantes y patas torneadas.
@@ -121,7 +122,7 @@ ar-pool-8/
 ├── tests/                   Pruebas automáticas (etapa1, etapa2)
 └── vendor/aframe.min.js     A-Frame 1.6.0 (MIT)
 ```
-En las próximas etapas se agregan `js/reglas/`, `js/ia/`, `js/red/` y `servidor/`.
+Más adelante se agregan `js/reglas/`, `js/ia/`, `js/red/` y `servidor/`.
 
 ## 6. Requisitos de la clase y dónde están
 
