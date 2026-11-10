@@ -298,20 +298,40 @@
           : 'Sin WebXR AR · ◎ abre la vista con cámara';
         chip.className = 'chip medio';
       } else {
+        vistaPedida = null;
         $('btn-ar').disabled = true;
         chip.textContent = window.isSecureContext ? 'Sin cámara ni WebXR · modo 3D' : 'AR y cámara requieren HTTPS · modo 3D';
         chip.className = 'chip no';
       }
+      if (vistaPedida === 'camara' || vistaPedida === 'ar') {
+        if (c.webxr) {
+          $('inicio-titulo').textContent = 'Realidad aumentada';
+          $('inicio-texto').innerHTML = 'Apunta al suelo, espera el aro verde y toca la pantalla para colocar la mesa.';
+          $('btn-iniciar-real').textContent = 'INICIAR AR';
+        }
+        $('inicio-real').classList.remove('oculto');
+      }
     });
 
-    $('btn-ar').addEventListener('click', function () {
-      if (enVistaReal()) { ar.salir(); return; }
-      if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
+    function abrirVistaReal() {
       if (capacidades.webxr) ar.entrarWebXR();
       else if (capacidades.camara) {
         aviso('Abriendo la cámara… acepta los permisos de cámara y movimiento', 2600);
         ar.entrarCamara();
       }
+    }
+    // Desde el menú: ar-experiencia.html?vista=camara (o ?vista=ar) → pantalla para abrir con un toque
+    var vistaPedida = new URLSearchParams(location.search).get('vista');
+    $('btn-iniciar-real').addEventListener('click', function () {
+      $('inicio-real').classList.add('oculto');
+      abrirVistaReal();
+    });
+    $('btn-solo-3d').addEventListener('click', function () { $('inicio-real').classList.add('oculto'); });
+
+    $('btn-ar').addEventListener('click', function () {
+      if (enVistaReal()) { ar.salir(); return; }
+      if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
+      abrirVistaReal();
     });
     $('btn-salir-ar').addEventListener('click', function () { ar.salir(); });
     $('btn-mover').addEventListener('click', function () { ar.moverMesa(); });

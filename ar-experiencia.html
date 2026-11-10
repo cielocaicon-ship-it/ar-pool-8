@@ -180,6 +180,17 @@
     <!-- Ficha de la bola seleccionada -->
     <div id="ficha-bola" class="panel ficha oculto"></div>
 
+    <!-- Inicio de la vista real: abrir la cámara necesita un toque del jugador -->
+    <div id="inicio-real" class="modal oculto">
+      <div class="panel modal-caja inicio-caja">
+        <div class="icono-grande">◎</div>
+        <h2 id="inicio-titulo">Vista con cámara</h2>
+        <p id="inicio-texto" class="nota">La mesa aparecerá sobre lo que ve tu cámara. Acepta los permisos de <b>cámara</b> y de <b>movimiento</b>.</p>
+        <button id="btn-iniciar-real" class="boton-principal">ABRIR CÁMARA</button>
+        <button id="btn-solo-3d" class="enlace">Prefiero jugar en 3D</button>
+      </div>
+    </div>
+
     <!-- Ayuda -->
     <div id="ayuda" class="modal oculto">
       <div class="panel modal-caja">
@@ -203,7 +214,7 @@
           <tr><td>◀ ▶</td><td>Ajuste fino de la puntería</td></tr>
           <tr><td>Vista con cámara</td><td>1 dedo gira la mesa · 2 dedos la acercan o alejan</td></tr>
         </table>
-        <p class="nota">La bola blanca embocada vuelve a la cabecera. Las reglas completas de 8 bolas y el bot llegan en la Etapa 3.</p>
+        <p class="nota">La bola blanca embocada vuelve a la cabecera. Pulsa △ para volver a armar el triángulo.</p>
         <button id="btn-cerrar-ayuda" class="boton-principal">Entendido</button>
       </div>
     </div>

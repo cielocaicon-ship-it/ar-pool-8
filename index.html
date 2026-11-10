@@ -68,9 +68,6 @@
     #info-ar { max-width: 460px; line-height: 1.5; }
     #info-ar b.si { color: var(--verde); } #info-ar b.no { color: #ffb4a8; }
 
-    .etapas { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 12px; }
-    .etapas span { padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.08); color: var(--texto-suave); }
-    .etapas span.hecha { border-color: rgba(57, 217, 138, .5); color: var(--verde); }
 
     /* bolas decorativas */
     .bola-deco { position: absolute; border-radius: 50%; z-index: 1; filter: blur(.2px); opacity: .9;
@@ -93,21 +90,16 @@
       </header>
 
       <section class="modos" aria-label="Modos de juego">
-        <a class="modo principal" href="ar-experiencia.html">
-          <span class="estado listo">DISPONIBLE</span>
-          <span class="nombre">JUGAR</span>
-          <span class="desc">Mesa de 9 pies con física real: apunta, carga la fuerza y emboca. Colócala en tu habitación con AR (Android) o mírala con la cámara (iPhone).</span>
+        <a id="btn-real" class="modo principal" href="ar-experiencia.html?vista=camara">
+          <span id="estado-real" class="estado listo">CÁMARA</span>
+          <span id="nombre-real" class="nombre">JUGAR CON CÁMARA</span>
+          <span id="desc-real" class="desc">La mesa aparece sobre lo que ve tu cámara. Gira el teléfono para mirarla y tira desde donde estás.</span>
         </a>
-        <div class="modo" aria-disabled="true" title="Se habilita en la Etapa 3">
-          <span class="estado pronto">ETAPA 3</span>
-          <span class="nombre">JUGAR CONTRA IA</span>
-          <span class="desc">Bot con dificultad fácil, normal y difícil que juega con la misma física y reglas.</span>
-        </div>
-        <div class="modo" aria-disabled="true" title="Se habilita en la Etapa 4">
-          <span class="estado pronto">ETAPA 4</span>
-          <span class="nombre">MULTIJUGADOR ONLINE</span>
-          <span class="desc">Salas con código, servidor autoritativo con Node.js + Socket.IO y reconexión.</span>
-        </div>
+        <a class="modo" href="ar-experiencia.html">
+          <span class="estado pronto">3D</span>
+          <span class="nombre">JUGAR EN 3D</span>
+          <span class="desc">Mesa de 9 pies en una sala virtual, con cámara libre, de tiro y vista superior.</span>
+        </a>
       </section>
 
       <section class="datos">
@@ -125,14 +117,6 @@
         </div>
       </section>
 
-      <nav class="etapas" aria-label="Progreso del desarrollo">
-        <span class="hecha">✓ 1 · Mesa, bolas, taco y cámara</span>
-        <span class="hecha">✓ 2 · Física</span>
-        <span>3 · Reglas y bot</span>
-        <span>4 · Multijugador</span>
-        <span class="hecha">◐ 5 · AR y cámara</span>
-        <span>6 · Pulido</span>
-      </nav>
     </div>
   </main>
 
@@ -148,20 +132,32 @@
       try {
         var s = JSON.parse(localStorage.getItem('arpool8.stats')) || {};
         document.getElementById('texto-stats').textContent =
-          (s.sesiones || 0) + ' sesiones · ' + (s.golpesPractica || 0) + ' golpes de práctica';
+          (s.sesiones || 0) + ' sesiones · ' + (s.golpesPractica || 0) + ' golpes';
       } catch (e) {}
-      // Detección real de WebXR AR
+      // ¿Qué puede hacer este dispositivo? El botón principal se adapta.
       var t = document.getElementById('texto-ar');
-      function msg(ok, txt) { t.innerHTML = '<b class="' + (ok ? 'si' : 'no') + '">' + (ok ? 'Compatible' : 'No disponible') + '</b> · ' + txt; }
+      function msg(clase, etiqueta, txt) { t.innerHTML = '<b class="' + clase + '">' + etiqueta + '</b> · ' + txt; }
       var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (!window.isSecureContext) msg(false, 'WebXR exige HTTPS. Abre el juego desde una dirección https:// para usar AR.');
-      else if (!navigator.xr) msg(false, ios
-        ? 'iPhone/iPad no ofrece WebXR. Puedes usar la vista con cámara (la mesa sigue el giro del teléfono, sin anclarse al suelo).'
-        : 'Este navegador no ofrece WebXR. Jugarás en modo 3D (no es realidad aumentada).');
+      var hayCamara = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
+      function modoCamara() {
+        if (hayCamara) msg('si', 'Cámara lista', ios
+          ? 'En iPhone la mesa aparece sobre la cámara y sigue el giro del teléfono (no se ancla al suelo).'
+          : 'La mesa aparece sobre la cámara y sigue el giro del teléfono.');
+        else {
+          msg('no', 'Sin cámara', window.isSecureContext ? 'Este navegador no permite usar la cámara. Juega en 3D.' : 'La cámara necesita HTTPS.');
+          var b = document.getElementById('btn-real');
+          b.setAttribute('aria-disabled', 'true'); b.removeAttribute('href');
+        }
+      }
+      if (!window.isSecureContext || !navigator.xr) modoCamara();
       else navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
-        msg(ok, ok ? 'Tu dispositivo admite AR WebXR: podrás colocar la mesa sobre el suelo de tu habitación.'
-                   : 'Hay WebXR pero sin sesiones AR. Puedes usar la vista con cámara o el modo 3D.');
-      }).catch(function () { msg(false, 'No se pudo comprobar. Se usará el modo 3D.'); });
+        if (!ok) return modoCamara();
+        document.getElementById('btn-real').href = 'ar-experiencia.html?vista=ar';
+        document.getElementById('estado-real').textContent = 'AR';
+        document.getElementById('nombre-real').textContent = 'JUGAR EN AR';
+        document.getElementById('desc-real').textContent = 'Coloca la mesa sobre el suelo de tu habitación a tamaño real y camina alrededor.';
+        msg('si', 'AR disponible', 'Tu dispositivo puede anclar la mesa al suelo con WebXR.');
+      }).catch(modoCamara);
     })();
   </script>
 </body>
