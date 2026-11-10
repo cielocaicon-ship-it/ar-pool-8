@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>AR POOL 8 · Mesa de práctica</title>
+  <meta name="theme-color" content="#07110c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+
+  <!-- Motor: A-Frame 1.6 (incluye Three.js y WebXR). Copia local para que funcione sin CDN. -->
+  <script src="vendor/aframe.min.js"></script>
+
+  <!-- Núcleo (datos y cálculos, sin dependencia de A-Frame) -->
+  <script src="js/core/config.js"></script>
+  <script src="js/core/rack.js"></script>
+  <script src="js/core/aim.js"></script>
+  <script src="js/core/textures.js"></script>
+
+  <!-- Componentes A-Frame (arquitectura Entity-Component-System) -->
+  <script src="js/components/escena-realista.js"></script>
+  <script src="js/components/mesa-billar.js"></script>
+  <script src="js/components/bola-billar.js"></script>
+  <script src="js/components/taco-billar.js"></script>
+  <script src="js/components/camara-orbita.js"></script>
+
+  <!-- Aplicación: interfaz, controles, preferencias -->
+  <script src="js/ar-app.js"></script>
+</head>
+<body class="juego">
+
+  <a-scene
+    id="escena"
+    escena-realista="calidad: media"
+    renderer="antialias: true; colorManagement: true; maxCanvasWidth: -1; maxCanvasHeight: -1"
+    shadow="type: pcfsoft"
+    background="color: #0b0d0f"
+    fog="type: exponential2; color: #0b0d0f; density: 0.085"
+    xr-mode-ui="enabled: false"
+    loading-screen="dotsColor: #39d98a; backgroundColor: #07110c"
+    cursor="rayOrigin: mouse; fuse: false"
+    raycaster="objects: .interactivo; far: 30">
+
+    <!-- ===================== LUCES ===================== -->
+    <a-entity id="luz-ambiente" light="type: hemisphere; color: #fff4e3; groundColor: #2b1d13; intensity: 0.22"></a-entity>
+    <a-entity id="luz-principal" position="0.35 3.4 0.45"
+      light="type: directional; color: #fff0d8; intensity: 1.1; castShadow: true;
+             shadowMapWidth: 2048; shadowMapHeight: 2048;
+             shadowCameraLeft: -1.9; shadowCameraRight: 1.9; shadowCameraTop: 1.9; shadowCameraBottom: -1.9;
+             shadowCameraNear: 0.5; shadowCameraFar: 6; shadowBias: -0.0003; shadowRadius: 4; target: #mesa"></a-entity>
+    <!-- focos de la lámpara (sin sombra, para no costar FPS) -->
+    <a-entity class="solo-escritorio" position="-0.7 1.74 0" rotation="-90 0 0" light="type: spot; color: #ffe9c7; intensity: 3.2; angle: 50; penumbra: 0.85; distance: 5; decay: 2"></a-entity>
+    <a-entity class="solo-escritorio" position="0 1.74 0" rotation="-90 0 0" light="type: spot; color: #ffe9c7; intensity: 3.2; angle: 50; penumbra: 0.85; distance: 5; decay: 2"></a-entity>
+    <a-entity class="solo-escritorio" position="0.7 1.74 0" rotation="-90 0 0" light="type: spot; color: #ffe9c7; intensity: 3.2; angle: 50; penumbra: 0.85; distance: 5; decay: 2"></a-entity>
+
+    <!-- ===================== SALA (solo modo 3D; en AR se ve la habitación real) ===================== -->
+    <a-entity id="piso" class="solo-escritorio" piso-madera
+      geometry="primitive: plane; width: 40; height: 40" rotation="-90 0 0"></a-entity>
+
+    <!-- ===================== MESA ===================== -->
+    <!-- mesa-raiz: en la Etapa 5 el hit-test de WebXR moverá esta entidad al suelo real -->
+    <a-entity id="mesa-raiz" position="0 0 0"
+      animation__intro="property: scale; from: 0.96 0.96 0.96; to: 1 1 1; dur: 1100; easing: easeOutCubic">
+
+      <a-entity id="mesa" mesa-billar position="0 0.76 0">
+        <!-- 16 bolas: el componente crea una <a-entity bola-billar> por bola -->
+        <a-entity id="bolas" triangulo-bolas></a-entity>
+
+        <!-- Taco con línea guía -->
+        <a-entity id="taco" taco-billar="objetivo: #bola-0; angulo: 0"></a-entity>
+
+        <!-- Superficie invisible para apuntar con el raycaster (clic / toque sobre el paño) -->
+        <a-entity id="zona-apuntado" class="interactivo"
+          geometry="primitive: plane; width: 2.54; height: 1.27"
+          rotation="-90 0 0" position="0 0.0004 0"
+          material="shader: flat; opacity: 0; transparent: true; depthWrite: false"></a-entity>
+
+        <!-- Anillo de selección de bola (animación en bucle) -->
+        <a-entity id="seleccion" visible="false" rotation="-90 0 0"
+          geometry="primitive: ring; radiusInner: 0.033; radiusOuter: 0.039; segmentsTheta: 48"
+          material="shader: flat; color: #ffd166; transparent: true; opacity: 0.95; depthWrite: false"
+          animation="property: scale; from: 1 1 1; to: 1.22 1.22 1.22; dir: alternate; loop: true; dur: 650; easing: easeInOutSine"></a-entity>
+      </a-entity>
+
+      <a-entity id="lampara" class="solo-escritorio" lampara-billar="altura: 1.0" position="0 0.76 0"></a-entity>
+    </a-entity>
+
+    <!-- ===================== CÁMARA ===================== -->
+    <a-entity id="camara" camera="fov: 55; near: 0.02; far: 60"
+      look-controls="enabled: false" wasd-controls="enabled: false"
+      camara-orbita="modo: libre; mesa: #mesa; blanca: #bola-0; taco: #taco"></a-entity>
+  </a-scene>
+
+  <!-- ===================== INTERFAZ (paneles flotantes) ===================== -->
+  <div id="hud" class="hud">
+    <!-- Marcador -->
+    <section class="panel panel-marcador">
+      <div class="marca">AR&nbsp;POOL&nbsp;<span class="ocho">8</span></div>
+      <div class="fila"><span class="etq">Modo</span><span id="hud-modo">Mesa de práctica</span></div>
+      <div class="fila"><span class="etq">Jugador</span><span id="hud-jugador">Jugador</span></div>
+      <div class="fila"><span class="etq">Turno</span><span id="hud-turno">Práctica libre</span></div>
+      <div class="fila"><span class="etq">Bolas en mesa</span><span id="hud-bolas">15</span></div>
+      <div class="fila"><span class="etq">Golpes</span><span id="hud-golpes">0</span></div>
+    </section>
+
+    <!-- Botones superiores -->
+    <nav class="panel panel-botones">
+      <button id="btn-camara" class="icono" title="Cambiar cámara (C)"><span>🎥</span><small id="lbl-camara">Libre</small></button>
+      <button id="btn-guia" class="icono" title="Línea guía (G)"><span>⟶</span><small id="lbl-guia">Guía sí</small></button>
+      <button id="btn-calidad" class="icono" title="Calidad gráfica"><span>✦</span><small id="lbl-calidad">Media</small></button>
+      <button id="btn-ayuda" class="icono" title="Controles (H)"><span>?</span><small>Ayuda</small></button>
+      <a id="btn-salir" class="icono" href="index.html" title="Salir"><span>⎋</span><small>Salir</small></a>
+    </nav>
+
+    <!-- Indicadores de fuerza y dirección -->
+    <section class="panel panel-tiro">
+      <div class="brujula" title="Dirección del taco">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="44" class="aro"/>
+          <rect x="12" y="30" width="76" height="40" rx="4" class="mini-mesa"/>
+          <g id="flecha"><line x1="50" y1="50" x2="88" y2="50" class="linea"/><polygon points="92,50 82,44 82,56" class="punta"/></g>
+          <circle cx="50" cy="50" r="5" class="blanca"/>
+        </svg>
+        <div id="hud-angulo" class="valor">0°</div>
+      </div>
+      <div class="fuerza">
+        <div class="barra"><div id="barra-fuerza" class="relleno"></div></div>
+        <div id="hud-fuerza" class="valor">0%</div>
+        <small>Fuerza</small>
+      </div>
+    </section>
+
+    <!-- Controles táctiles / ratón -->
+    <section class="panel panel-controles">
+      <button id="btn-izq" class="ctl" aria-label="Girar taco a la izquierda">◀</button>
+      <button id="btn-golpear" class="ctl golpear">MANTÉN PARA<br><b>GOLPEAR</b></button>
+      <button id="btn-der" class="ctl" aria-label="Girar taco a la derecha">▶</button>
+    </section>
+
+    <!-- Estado AR -->
+    <div id="estado-ar" class="chip">Comprobando WebXR…</div>
+
+    <!-- Mensajes -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Ficha de la bola seleccionada -->
+    <div id="ficha-bola" class="panel ficha oculto"></div>
+
+    <!-- Ayuda -->
+    <div id="ayuda" class="modal oculto">
+      <div class="panel modal-caja">
+        <h2>Controles · Etapa 1</h2>
+        <table>
+          <tr><th>Computador</th><td></td></tr>
+          <tr><td>Arrastrar el ratón</td><td>Girar la cámara (vista libre) o el taco (vista de tiro y superior)</td></tr>
+          <tr><td>Rueda del ratón</td><td>Acercar / alejar</td></tr>
+          <tr><td>← → o A / D</td><td>Girar el taco (con Shift: ajuste fino)</td></tr>
+          <tr><td>Mantener ESPACIO</td><td>Cargar fuerza; soltar = golpe</td></tr>
+          <tr><td>Clic en el paño</td><td>Apuntar el taco a ese punto</td></tr>
+          <tr><td>Clic en una bola</td><td>Ver su información</td></tr>
+          <tr><td>C · 1 · 2 · 3</td><td>Cambiar cámara (libre · tiro · superior)</td></tr>
+          <tr><td>G</td><td>Mostrar / ocultar línea guía</td></tr>
+          <tr><th>Celular</th><td></td></tr>
+          <tr><td>Un dedo</td><td>Girar cámara o taco</td></tr>
+          <tr><td>Dos dedos</td><td>Zoom</td></tr>
+          <tr><td>◀ ▶ y GOLPEAR</td><td>Girar el taco y golpear (mantén para cargar)</td></tr>
+        </table>
+        <p class="nota">En esta etapa el taco golpea la bola y registra dirección y fuerza, pero las bolas aún no se mueven: el motor de física se integra en la Etapa 2.</p>
+        <button id="btn-cerrar-ayuda" class="boton-principal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

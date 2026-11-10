@@ -1,0 +1,11 @@
+{
+  "name": "ar-pool-8",
+  "version": "0.1.0",
+  "description": "AR POOL 8 — pool de 8 bolas en realidad aumentada con A-Frame y WebXR (Etapa 1)",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve -l 8080 .",
+    "test": "node tests/etapa1.test.js"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,172 @@
+/* ==========================================================================
+   AR POOL 8 — estilos.css
+   Estética de paneles holográficos: vidrio oscuro, borde luminoso verde
+   paño y tipografía Rajdhani. Los paneles se ubican en los bordes para
+   no tapar la mesa.
+   ========================================================================== */
+:root {
+  --verde: #39d98a;
+  --verde-osc: #0f3d26;
+  --oro: #ffd166;
+  --texto: #eef3ef;
+  --texto-suave: #9fb3a7;
+  --vidrio: rgba(10, 18, 14, 0.58);
+  --borde: rgba(120, 255, 190, 0.22);
+  --sombra: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --radio: 16px;
+  --titulo: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --cuerpo: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #07110c; color: var(--texto); font-family: var(--cuerpo); }
+button { font: inherit; color: inherit; }
+
+/* ---------------------------------------------------------------- HUD */
+.hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+.hud > * { pointer-events: auto; }
+.panel {
+  background: var(--vidrio);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.panel-marcador {
+  position: absolute; top: max(14px, env(safe-area-inset-top)); left: 14px;
+  padding: 12px 16px; min-width: 210px; font-size: 13px;
+}
+.marca { font-family: var(--titulo); font-weight: 700; font-size: 22px; letter-spacing: 3px; margin-bottom: 6px; }
+.ocho {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #555 0, #111 45%, #000 100%); font-size: 14px; letter-spacing: 0;
+  box-shadow: inset 0 0 0 5px #000, inset 0 0 0 10px #f4f1e6; color: #111; vertical-align: middle;
+}
+.fila { display: flex; justify-content: space-between; gap: 18px; padding: 3px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+.etq { color: var(--texto-suave); }
+
+.panel-botones {
+  position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px;
+  display: flex; gap: 4px; padding: 6px;
+}
+.icono {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 58px; height: 54px; padding: 4px 8px; border: 0; border-radius: 12px;
+  background: transparent; cursor: pointer; text-decoration: none; color: var(--texto);
+  transition: background .2s, transform .1s;
+}
+.icono span { font-size: 18px; line-height: 1; }
+.icono small { font-size: 10.5px; color: var(--texto-suave); letter-spacing: .5px; }
+.icono:hover { background: rgba(57, 217, 138, 0.14); }
+.icono:active { transform: scale(.95); }
+
+.panel-tiro {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 14px 12px;
+}
+.brujula { text-align: center; }
+.brujula svg { width: 78px; height: 78px; display: block; }
+.brujula .aro { fill: none; stroke: var(--borde); stroke-width: 2; }
+.brujula .mini-mesa { fill: rgba(28, 92, 60, 0.75); stroke: #5a3622; stroke-width: 3; }
+.brujula .linea { stroke: var(--oro); stroke-width: 3; }
+.brujula .punta { fill: var(--oro); }
+.brujula .blanca { fill: #f4f1e6; }
+.valor { font-family: var(--titulo); font-weight: 700; font-size: 18px; }
+.fuerza { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fuerza small { color: var(--texto-suave); font-size: 11px; }
+.barra {
+  width: 18px; height: 150px; border-radius: 10px; overflow: hidden; position: relative;
+  background: rgba(255, 255, 255, 0.07); border: 1px solid var(--borde);
+}
+.relleno {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 0%;
+  background: linear-gradient(0deg, #39d98a 0%, #ffd166 60%, #ff5a4e 100%);
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.6); transition: height .05s linear;
+}
+
+.panel-controles {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: max(16px, env(safe-area-inset-bottom)); display: flex; gap: 10px; padding: 8px;
+}
+.ctl {
+  width: 64px; height: 64px; border-radius: 14px; border: 1px solid var(--borde);
+  background: rgba(255, 255, 255, 0.05); font-size: 22px; cursor: pointer; touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.ctl:active { background: rgba(57, 217, 138, 0.2); }
+.ctl.golpear {
+  width: 150px; font-size: 11px; letter-spacing: 1px; line-height: 1.3; font-family: var(--titulo);
+  background: linear-gradient(180deg, rgba(57, 217, 138, 0.35), rgba(15, 61, 38, 0.6));
+}
+.ctl.golpear b { font-size: 20px; letter-spacing: 3px; }
+.ctl.golpear.activo { background: linear-gradient(180deg, rgba(255, 209, 102, 0.55), rgba(120, 60, 10, 0.6)); }
+
+.chip {
+  position: absolute; left: 14px; bottom: max(16px, env(safe-area-inset-bottom));
+  padding: 7px 12px; border-radius: 999px; font-size: 11.5px; background: var(--vidrio);
+  border: 1px solid var(--borde); color: var(--texto-suave); max-width: 46vw;
+}
+.chip.si { color: var(--verde); border-color: rgba(57, 217, 138, .5); }
+.chip.no { color: #ffb4a8; border-color: rgba(255, 120, 100, .35); }
+
+.toast {
+  position: absolute; left: 50%; top: 18px; transform: translate(-50%, -20px);
+  max-width: min(560px, 70vw); padding: 10px 18px; border-radius: 14px; text-align: center; font-size: 14px;
+  background: rgba(8, 14, 11, 0.82); border: 1px solid var(--borde); opacity: 0; pointer-events: none;
+  transition: opacity .3s, transform .3s; backdrop-filter: blur(10px);
+}
+.toast small { color: var(--texto-suave); }
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+.ficha {
+  position: absolute; left: 14px; top: 220px; display: flex; gap: 12px; align-items: center;
+  padding: 10px 14px; font-size: 13px; max-width: 300px;
+}
+.ficha .muestra {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  box-shadow: inset -4px -6px 10px rgba(0,0,0,.35), inset 3px 4px 8px rgba(255,255,255,.25);
+}
+.ficha .muestra i {
+  font-style: normal; width: 20px; height: 20px; border-radius: 50%; background: #f4f1e6;
+  display: grid; place-items: center; color: #111; font-weight: 700; font-size: 11px;
+}
+.ficha small { color: var(--texto-suave); }
+
+.oculto { display: none !important; }
+
+.modal { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.45); }
+.modal-caja { padding: 22px 26px; max-width: 560px; width: calc(100% - 28px); max-height: 86vh; overflow: auto; }
+.modal-caja h2 { font-family: var(--titulo); letter-spacing: 2px; margin: 0 0 10px; }
+.modal-caja table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.modal-caja th { text-align: left; color: var(--verde); padding: 10px 0 4px; font-family: var(--titulo); letter-spacing: 1px; }
+.modal-caja td { padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); vertical-align: top; }
+.modal-caja td:first-child { color: var(--oro); white-space: nowrap; padding-right: 14px; }
+.nota { font-size: 12.5px; color: var(--texto-suave); line-height: 1.5; }
+
+.boton-principal {
+  border: 0; border-radius: 12px; padding: 12px 22px; cursor: pointer; font-family: var(--titulo);
+  font-weight: 700; font-size: 16px; letter-spacing: 2px; color: #04140b;
+  background: linear-gradient(180deg, #5cf0a6, #2bb873); box-shadow: 0 6px 24px rgba(57, 217, 138, .35);
+}
+
+/* Celular en vertical: paneles más compactos */
+@media (max-width: 700px) {
+  .panel-marcador { min-width: 0; padding: 8px 12px; font-size: 11.5px; }
+  .panel-marcador .fila:nth-child(n+5) { display: none; }
+  .marca { font-size: 17px; }
+  .icono { min-width: 44px; height: 46px; padding: 2px 4px; }
+  .icono small { display: none; }
+  .panel-botones { top: auto; bottom: 100px; right: 10px; flex-direction: column; }
+  .panel-tiro { top: 92px; transform: none; right: 10px; padding: 10px 8px; gap: 8px; }
+  .brujula svg { width: 56px; height: 56px; }
+  .barra { height: 90px; }
+  .ctl { width: 58px; height: 58px; }
+  .ctl.golpear { width: 130px; }
+  .chip { bottom: 90px; max-width: 60vw; }
+  .ficha { top: auto; bottom: 140px; }
+}
+
+/* Cursor de la escena */
+.juego canvas.a-canvas { cursor: grab; }
+.juego canvas.a-canvas:active { cursor: grabbing; }

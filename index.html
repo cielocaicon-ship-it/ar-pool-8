@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AR POOL 8 · Realistic Mixed Reality Billiards</title>
+  <meta name="theme-color" content="#07110c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    body.inicio {
+      min-height: 100%; overflow-x: hidden;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 38%, rgba(31, 110, 70, .55), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 120%, rgba(255, 209, 102, .10), transparent 70%),
+        #050b08;
+    }
+    .escenario { min-height: 100vh; display: grid; place-items: center; padding: 28px 16px; position: relative; }
+    .contenido { width: min(980px, 100%); display: grid; gap: 26px; justify-items: center; position: relative; z-index: 2; }
+    .titulo { text-align: center; }
+    .titulo h1 {
+      margin: 0; font-family: var(--titulo); font-weight: 700; letter-spacing: .18em;
+      font-size: clamp(46px, 10vw, 104px); line-height: .95; display: flex; align-items: center; justify-content: center;
+    }
+    .titulo h1 .grad {
+      background: linear-gradient(180deg, #ffffff 0%, #cfe9da 55%, #7fbf9c 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 8px 30px rgba(57, 217, 138, .25));
+    }
+    .titulo h1 .ocho-grande {
+      display: inline-grid; place-items: center; width: .95em; height: .95em; border-radius: 50%;
+      vertical-align: -.08em; margin-left: .08em; letter-spacing: 0; font-size: .9em;
+      background: radial-gradient(circle at 32% 28%, #6a6a6a 0, #151515 38%, #000 100%);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .6), inset -10px -14px 28px rgba(0, 0, 0, .7);
+    }
+    .titulo h1 .ocho-grande i {
+      font-style: normal; width: 1.15em; height: 1.15em; border-radius: 50%; background: #f4f1e6; color: #111;
+      display: grid; place-items: center; font-size: .4em; line-height: 1; letter-spacing: 0; padding-top: .05em;
+    }
+    .titulo p { margin: 12px 0 0; color: var(--texto-suave); letter-spacing: .35em; font-size: 12px; text-transform: uppercase; }
+
+    .modos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; width: 100%; }
+    .modo {
+      position: relative; display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 22px 22px 20px;
+      border-radius: 20px; border: 1px solid var(--borde); color: var(--texto); text-decoration: none;
+      background: linear-gradient(160deg, rgba(57, 217, 138, .16), rgba(8, 20, 14, .75) 60%);
+      box-shadow: var(--sombra); backdrop-filter: blur(12px); transition: transform .2s, border-color .2s, box-shadow .2s;
+      cursor: pointer; font: inherit;
+    }
+    .modo:hover:not([aria-disabled="true"]) { transform: translateY(-4px); border-color: rgba(57, 217, 138, .6); box-shadow: 0 16px 50px rgba(57, 217, 138, .18); }
+    .modo .nombre { font-family: var(--titulo); font-weight: 700; font-size: 26px; letter-spacing: .12em; }
+    .modo .desc { color: var(--texto-suave); font-size: 13.5px; line-height: 1.5; }
+    .modo .estado { align-self: flex-start; font-size: 11px; padding: 4px 10px; border-radius: 999px; letter-spacing: .08em; }
+    .modo .estado.listo { background: rgba(57, 217, 138, .18); color: var(--verde); }
+    .modo .estado.pronto { background: rgba(255, 255, 255, .07); color: var(--texto-suave); }
+    .modo[aria-disabled="true"] { cursor: not-allowed; opacity: .55; background: rgba(10, 16, 13, .6); }
+    .modo.principal { border-color: rgba(57, 217, 138, .55); }
+
+    .datos { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; }
+    .datos .panel { padding: 12px 16px; font-size: 13px; }
+    .datos label { color: var(--texto-suave); display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+    .datos input {
+      background: rgba(255, 255, 255, .06); border: 1px solid var(--borde); color: var(--texto); border-radius: 10px;
+      padding: 9px 12px; font: inherit; width: 220px; outline: none;
+    }
+    .datos input:focus { border-color: var(--verde); }
+    #info-ar { max-width: 460px; line-height: 1.5; }
+    #info-ar b.si { color: var(--verde); } #info-ar b.no { color: #ffb4a8; }
+
+    .etapas { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 12px; }
+    .etapas span { padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.08); color: var(--texto-suave); }
+    .etapas span.hecha { border-color: rgba(57, 217, 138, .5); color: var(--verde); }
+
+    /* bolas decorativas */
+    .bola-deco { position: absolute; border-radius: 50%; z-index: 1; filter: blur(.2px); opacity: .9;
+      box-shadow: inset -12px -16px 28px rgba(0,0,0,.55), inset 8px 10px 18px rgba(255,255,255,.25), 0 30px 60px rgba(0,0,0,.5);
+      animation: flotar 7s ease-in-out infinite; }
+    @keyframes flotar { 50% { transform: translateY(-14px) rotate(8deg); } }
+    @media (max-width: 700px) { .bola-deco { display: none; } }
+  </style>
+</head>
+<body class="inicio">
+  <main class="escenario">
+    <div class="bola-deco" style="width:120px;height:120px;left:6%;top:14%;background:radial-gradient(circle at 35% 30%,#ffe27a,#f2b705 45%,#8a6200)"></div>
+    <div class="bola-deco" style="width:86px;height:86px;right:9%;top:22%;animation-delay:-2s;background:radial-gradient(circle at 35% 30%,#5d8df0,#1450b4 45%,#0a275a)"></div>
+    <div class="bola-deco" style="width:96px;height:96px;right:14%;bottom:12%;animation-delay:-4s;background:radial-gradient(circle at 35% 30%,#ff8a7a,#d42a1f 45%,#5e0f0a)"></div>
+
+    <div class="contenido">
+      <header class="titulo">
+        <h1><span class="grad">AR POOL</span><span class="ocho-grande" aria-label="8"><i>8</i></span></h1>
+        <p>Realistic Mixed Reality Billiards</p>
+      </header>
+
+      <section class="modos" aria-label="Modos de juego">
+        <a class="modo principal" href="ar-experiencia.html?modo=practica">
+          <span class="estado listo">DISPONIBLE</span>
+          <span class="nombre">MESA DE PRÁCTICA</span>
+          <span class="desc">Mesa profesional de 9 pies con las 16 bolas, taco y cámaras. Apunta, carga la fuerza y golpea la blanca.</span>
+        </a>
+        <div class="modo" aria-disabled="true" title="Se habilita en la Etapa 3">
+          <span class="estado pronto">ETAPA 3</span>
+          <span class="nombre">JUGAR CONTRA IA</span>
+          <span class="desc">Bot con dificultad fácil, normal y difícil que juega con la misma física y reglas.</span>
+        </div>
+        <div class="modo" aria-disabled="true" title="Se habilita en la Etapa 4">
+          <span class="estado pronto">ETAPA 4</span>
+          <span class="nombre">MULTIJUGADOR ONLINE</span>
+          <span class="desc">Salas con código, servidor autoritativo con Node.js + Socket.IO y reconexión.</span>
+        </div>
+      </section>
+
+      <section class="datos">
+        <div class="panel">
+          <label for="nombre">Nombre del jugador</label>
+          <input id="nombre" maxlength="18" placeholder="Escribe tu nombre" autocomplete="nickname">
+        </div>
+        <div class="panel" id="info-ar">
+          <label>Realidad aumentada en este dispositivo</label>
+          <span id="texto-ar">Comprobando WebXR…</span>
+        </div>
+        <div class="panel">
+          <label>Tus estadísticas</label>
+          <span id="texto-stats">—</span>
+        </div>
+      </section>
+
+      <nav class="etapas" aria-label="Progreso del desarrollo">
+        <span class="hecha">✓ 1 · Mesa, bolas, taco y cámara</span>
+        <span>2 · Física</span>
+        <span>3 · Reglas y bot</span>
+        <span>4 · Multijugador</span>
+        <span>5 · WebXR AR</span>
+        <span>6 · Pulido</span>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      // Nombre (LocalStorage)
+      var input = document.getElementById('nombre');
+      input.value = localStorage.getItem('arpool8.nombre') || '';
+      input.addEventListener('input', function () {
+        localStorage.setItem('arpool8.nombre', input.value.trim());
+      });
+      // Estadísticas locales
+      try {
+        var s = JSON.parse(localStorage.getItem('arpool8.stats')) || {};
+        document.getElementById('texto-stats').textContent =
+          (s.sesiones || 0) + ' sesiones · ' + (s.golpesPractica || 0) + ' golpes de práctica';
+      } catch (e) {}
+      // Detección real de WebXR AR
+      var t = document.getElementById('texto-ar');
+      function msg(ok, txt) { t.innerHTML = '<b class="' + (ok ? 'si' : 'no') + '">' + (ok ? 'Compatible' : 'No disponible') + '</b> · ' + txt; }
+      var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!window.isSecureContext) msg(false, 'WebXR exige HTTPS. Abre el juego desde una dirección https:// para usar AR.');
+      else if (!navigator.xr) msg(false, ios
+        ? 'Safari en iPhone/iPad no ofrece WebXR AR. Podrás jugar en modo 3D táctil; no es realidad aumentada.'
+        : 'Este navegador no ofrece WebXR. Jugarás en modo 3D (no es realidad aumentada).');
+      else navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
+        msg(ok, ok ? 'Tu dispositivo admite sesiones immersive-ar. La colocación de la mesa en tu habitación llega en la Etapa 5.'
+                   : 'Hay WebXR pero sin sesiones AR. Jugarás en modo 3D (no es realidad aumentada).');
+      }).catch(function () { msg(false, 'No se pudo comprobar. Se usará el modo 3D.'); });
+    })();
+  </script>
+</body>
+</html>
