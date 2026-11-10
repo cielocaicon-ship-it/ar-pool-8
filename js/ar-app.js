@@ -386,7 +386,7 @@
     }
     return navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
       return ok
-        ? { clase: 'si', texto: 'WebXR AR disponible · se activa en la Etapa 5' }
+        ? { clase: 'si', texto: 'WebXR AR disponible' }
         : { clase: 'no', texto: 'Este dispositivo no ofrece AR WebXR · modo 3D' };
     }).catch(function () { return { clase: 'no', texto: 'No se pudo comprobar WebXR · modo 3D' }; });
   }
