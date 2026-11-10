@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#07110c">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilos.css?v=5">
+  <link rel="stylesheet" href="css/estilos.css?v=6">
   <style>
     body.inicio {
       min-height: 100%; overflow-x: hidden;
@@ -50,6 +50,8 @@
     }
     .modo:hover:not([aria-disabled="true"]) { transform: translateY(-4px); border-color: rgba(57, 217, 138, .6); box-shadow: 0 16px 50px rgba(57, 217, 138, .18); }
     .modo .nombre { font-family: var(--titulo); font-weight: 700; font-size: 26px; letter-spacing: .12em; }
+    .modo .extra { font-size: 12.5px; color: var(--texto-suave); margin-top: 4px; }
+    .modo .extra b { color: var(--verde); text-decoration: underline; }
     .modo .desc { color: var(--texto-suave); font-size: 13.5px; line-height: 1.5; }
     .modo .estado { align-self: flex-start; font-size: 11px; padding: 4px 10px; border-radius: 999px; letter-spacing: .08em; }
     .modo .estado.listo { background: rgba(57, 217, 138, .18); color: var(--verde); }
@@ -90,12 +92,18 @@
       </header>
 
       <section class="modos" aria-label="Modos de juego">
-        <a id="btn-real" class="modo principal" href="ar-experiencia.html?vista=camara&v=5">
-          <span id="estado-real" class="estado listo">CÁMARA</span>
-          <span id="nombre-real" class="nombre">JUGAR CON CÁMARA</span>
-          <span id="desc-real" class="desc">La mesa aparece sobre lo que ve tu cámara. Gira el teléfono para mirarla y tira desde donde estás.</span>
+        <a class="modo principal" href="ar-marcador.html?v=6">
+          <span class="estado listo">RECOMENDADO · iPHONE Y ANDROID</span>
+          <span class="nombre">ESCANEAR MARCADOR</span>
+          <span class="desc">Apunta la cámara al marcador Hiro y la mesa aparece encima, pegada a él. Camina alrededor para verla desde cualquier lado y tirar.</span>
+          <span class="extra">¿No tienes el marcador? <b data-href="marcador.html">Ábrelo o imprímelo aquí</b></span>
         </a>
-        <a class="modo" href="ar-experiencia.html?v=5">
+        <a id="btn-real" class="modo" href="ar-experiencia.html?vista=camara&v=6">
+          <span id="estado-real" class="estado pronto">CÁMARA</span>
+          <span id="nombre-real" class="nombre">CÁMARA LIBRE</span>
+          <span id="desc-real" class="desc">Sin marcador: la mesa aparece sobre la cámara y sigue el giro del teléfono.</span>
+        </a>
+        <a class="modo" href="ar-experiencia.html?v=6">
           <span class="estado pronto">3D</span>
           <span class="nombre">JUGAR EN 3D</span>
           <span class="desc">Mesa de 9 pies en una sala virtual, con cámara libre, de tiro y vista superior.</span>
@@ -122,6 +130,10 @@
 
   <script>
     (function () {
+      // Enlace al marcador dentro de la tarjeta principal
+      document.querySelector('[data-href]').addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); location.href = this.getAttribute('data-href');
+      });
       // Nombre (LocalStorage)
       var input = document.getElementById('nombre');
       input.value = localStorage.getItem('arpool8.nombre') || '';
@@ -152,9 +164,9 @@
       if (!window.isSecureContext || !navigator.xr) modoCamara();
       else navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
         if (!ok) return modoCamara();
-        document.getElementById('btn-real').href = 'ar-experiencia.html?vista=ar&v=5';
+        document.getElementById('btn-real').href = 'ar-experiencia.html?vista=ar&v=6';
         document.getElementById('estado-real').textContent = 'AR';
-        document.getElementById('nombre-real').textContent = 'JUGAR EN AR';
+        document.getElementById('nombre-real').textContent = 'AR EN EL SUELO';
         document.getElementById('desc-real').textContent = 'Coloca la mesa sobre el suelo de tu habitación a tamaño real y camina alrededor.';
         msg('si', 'AR disponible', 'Tu dispositivo puede anclar la mesa al suelo con WebXR.');
       }).catch(modoCamara);

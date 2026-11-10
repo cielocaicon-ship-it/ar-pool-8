@@ -56,21 +56,24 @@
   });
 
   function iniciar(scene) {
-    var $ = function (id) { return document.getElementById(id); };
+    // Si un elemento no existe en esta página (p. ej. la del marcador), se usa uno vacío para no fallar
+    var $ = function (id) { return document.getElementById(id) || document.createElement('div'); };
     var tacoEl = $('taco'), camEl = $('camara'), selEl = $('seleccion'), mesaEl = $('mesa');
     var taco = tacoEl.components['taco-billar'];
-    var cam = camEl.components['camara-orbita'];
+    var cam = camEl.components['camara-orbita'] || null;      // no existe en la página del marcador
     var fisica = mesaEl.components['fisica-mesa'];
     var ar = scene.components['modo-ar'];
     var SND = window.ARPOOL.sonido;
-    function enVistaReal() { return ar && ar.modo !== 'escritorio'; }
+    var punteria = scene.components['punteria-corporal'] || null;   // página del marcador
+    function enVistaReal() { return !!punteria || (ar && ar.modo !== 'escritorio'); }
+    function ajustarPunteria(d) { if (punteria) punteria.ajustar(d); else if (ar) ar.ajustarPunteria(d); }
 
     var NOMBRES_CAM = { libre: 'Libre', tiro: 'Tiro', superior: 'Superior' };
     var NOMBRES_CAL = { baja: 'Baja', media: 'Media', alta: 'Alta' };
 
     // --- aplicar preferencias guardadas
     scene.setAttribute('escena-realista', 'calidad', prefs.calidad);
-    camEl.setAttribute('camara-orbita', 'modo', prefs.camara);
+    if (cam) camEl.setAttribute('camara-orbita', 'modo', prefs.camara);
     tacoEl.setAttribute('taco-billar', 'guia', prefs.guia);
     $('lbl-calidad').textContent = NOMBRES_CAL[prefs.calidad];
     $('lbl-camara').textContent = NOMBRES_CAM[prefs.camara];
@@ -140,7 +143,7 @@
 
     // ------------------------------------------------------- Botones
     $('btn-camara').addEventListener('click', function () {
-      cam.siguienteModo();
+      if (cam) cam.siguienteModo();
     });
     function lamparaSegunCamara(modo) {   // en vista superior la lámpara taparía la mesa
       $('lampara').setAttribute('visible', modo !== 'superior');
@@ -205,7 +208,7 @@
       var dt = Math.min((ahora - ultimo) / 1000, 0.05);
       ultimo = ahora;
       if (giro !== 0) {
-        if (enVistaReal()) ar.ajustarPunteria(giro * (fino ? 4 : 20) * dt);
+        if (enVistaReal()) ajustarPunteria(giro * (fino ? 4 : 20) * dt);
         else taco.girar(giro * (fino ? 6 : 50) * dt);
       }
       if (cargando) {
@@ -232,10 +235,10 @@
         case 'ArrowLeft': case 'KeyA': giro = 1; break;
         case 'ArrowRight': case 'KeyD': giro = -1; break;
         case 'Space': e.preventDefault(); if (!e.repeat) empezarCarga(); break;
-        case 'KeyC': cam.siguienteModo(); break;
-        case 'Digit1': camEl.setAttribute('camara-orbita', 'modo', 'libre'); break;
-        case 'Digit2': camEl.setAttribute('camara-orbita', 'modo', 'tiro'); break;
-        case 'Digit3': camEl.setAttribute('camara-orbita', 'modo', 'superior'); break;
+        case 'KeyC': if (cam) cam.siguienteModo(); break;
+        case 'Digit1': if (cam) camEl.setAttribute('camara-orbita', 'modo', 'libre'); break;
+        case 'Digit2': if (cam) camEl.setAttribute('camara-orbita', 'modo', 'tiro'); break;
+        case 'Digit3': if (cam) camEl.setAttribute('camara-orbita', 'modo', 'superior'); break;
         case 'KeyG': alternarGuia(); break;
         case 'KeyR': reacomodar(); break;
         case 'KeyM': alternarSonido(); break;
@@ -282,6 +285,8 @@
     scene.addEventListener('raycaster-intersection', function () { scene.canvas.style.cursor = 'pointer'; });
     scene.addEventListener('raycaster-intersection-cleared', function () { scene.canvas.style.cursor = 'grab'; });
 
+    if (ar) iniciarAR();
+    function iniciarAR() {
     // ------------------------------------------------------- Realidad aumentada
     var capacidades = { webxr: false, camara: false };
     ar.capacidades().then(function (c) {
@@ -377,6 +382,7 @@
       }
     });
     scene.addEventListener('ar-error', function (e) { aviso(e.detail.mensaje, 4500); });
+    }
   }
 
   // Comprueba si el navegador ofrece sesiones 'immersive-ar' de WebXR

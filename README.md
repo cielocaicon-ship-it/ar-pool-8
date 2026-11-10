@@ -17,6 +17,15 @@ Videojuego de pool americano de 8 bolas hecho con **A-Frame 1.6 + Three.js + Web
 > troneras, fricción del paño y efecto). La blanca embocada vuelve a la cabecera.
 > Las reglas completas de 8 bolas, el bot y el multijugador llegan en próximas versiones.
 
+## Escanear marcador (modo principal, funciona en iPhone y Android)
+
+1. Abre `marcador.html` en un computador (o imprímelo) para tener el **marcador Hiro**.
+2. En el celular entra a **ESCANEAR MARCADOR** (`ar-marcador.html`) y acepta la cámara.
+3. Apunta al marcador: la mesa aparece encima y se queda pegada a él. Puedes caminar alrededor.
+4. El taco apunta desde donde está el celular hacia la blanca; ◀ ▶ hacen el ajuste fino; − / + cambian el tamaño.
+
+Usa **AR.js 3.4.8** (`vendor/arjs/`, licencia MIT) para seguir el marcador con la cámara.
+
 ## Realidad aumentada: qué funciona en cada teléfono
 
 | Dispositivo | Botón ◎ | Qué hace |
@@ -99,6 +108,8 @@ node tests/etapa2.test.js      # 15 pruebas: fricción, choques, bandas, tronera
 ```
 ar-pool-8/
 ├── index.html               Pantalla de bienvenida y selección de modo
+├── ar-marcador.html         AR con marcador Hiro (AR.js): la mesa se pega al marcador
+├── marcador.html            Marcador Hiro para abrir en otra pantalla o imprimir
 ├── ar-experiencia.html      Escena A-Frame (<a-scene>, <a-entity>, cámara, luces, interfaz)
 ├── css/estilos.css          Paneles holográficos semitransparentes
 ├── js/

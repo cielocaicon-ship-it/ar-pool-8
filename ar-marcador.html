@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>AR POOL 8 · Escanear marcador</title>
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css?v=6">
+
+  <!-- A-Frame 1.6 + AR.js (seguimiento del marcador Hiro con la cámara; funciona en iPhone y Android) -->
+  <script src="vendor/aframe.min.js"></script>
+  <script src="vendor/arjs/aframe-ar.js?v=6"></script>
+
+  <script src="js/core/config.js?v=6"></script>
+  <script src="js/core/rack.js?v=6"></script>
+  <script src="js/core/aim.js?v=6"></script>
+  <script src="js/core/textures.js?v=6"></script>
+  <script src="js/core/geometria-mesa.js?v=6"></script>
+  <script src="js/fisica/motor.js?v=6"></script>
+
+  <script src="js/components/escena-realista.js?v=6"></script>
+  <script src="js/components/mesa-billar.js?v=6"></script>
+  <script src="js/components/bola-billar.js?v=6"></script>
+  <script src="js/components/taco-billar.js?v=6"></script>
+  <script src="js/components/sonido-billar.js?v=6"></script>
+  <script src="js/components/fisica-mesa.js?v=6"></script>
+  <script src="js/components/punteria-corporal.js?v=6"></script>
+
+  <script src="js/ar-app.js?v=6"></script>
+  <script src="js/ar-marcador.js?v=6"></script>
+</head>
+<body class="juego vista-real modo-marcador">
+
+  <a-scene
+    id="escena"
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; cameraParametersUrl: vendor/arjs/camera_para.dat; patternRatio: 0.5"
+    renderer="antialias: true; alpha: true; colorManagement: true; logarithmicDepthBuffer: false"
+    escena-realista="calidad: media"
+    shadow="type: pcfsoft"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    loading-screen="dotsColor: #39d98a; backgroundColor: #000000"
+    cursor="rayOrigin: mouse; fuse: false"
+    raycaster="objects: .interactivo; far: 60"
+    punteria-corporal="mesa: #mesa; taco: #taco; marcador: #marcador">
+
+    <a-entity id="luz-ambiente" light="type: hemisphere; color: #fff4e3; groundColor: #3a2a1d; intensity: 1.0"></a-entity>
+
+    <!-- El marcador Hiro: todo lo que va dentro aparece encima de él.
+         Unidades: 1 = ancho del cuadro negro del marcador. -->
+    <a-marker id="marcador" type="pattern" url="vendor/arjs/patt.hiro" emitevents="true"
+      smooth="true" smoothCount="6" smoothTolerance="0.01" smoothThreshold="2">
+
+      <!-- Tapete oscuro bajo la mesa: tapa el marcador en la imagen (la detección usa el video original) -->
+      <a-entity geometry="primitive: circle; radius: 0.78; segments: 48" rotation="-90 0 0" position="0 0.002 0"
+        material="color: #151515; roughness: 1; metalness: 0" shadow="receive: true"></a-entity>
+
+      <a-entity id="mesa-raiz" scale="0.8 0.8 0.8">
+        <a-entity id="luz-principal" position="0.35 3.4 0.45"
+          light="type: directional; color: #fff0d8; intensity: 2.2; castShadow: true;
+                 shadowMapWidth: 1024; shadowMapHeight: 1024;
+                 shadowCameraLeft: -1.9; shadowCameraRight: 1.9; shadowCameraTop: 1.9; shadowCameraBottom: -1.9;
+                 shadowCameraNear: 0.5; shadowCameraFar: 6; shadowBias: -0.0003; target: #mesa"></a-entity>
+
+        <a-entity id="mesa" mesa-billar fisica-mesa="taco: #taco" position="0 0.76 0">
+          <a-entity id="bolas" triangulo-bolas></a-entity>
+          <a-entity id="taco" taco-billar="objetivo: #bola-0; angulo: 0"></a-entity>
+          <a-entity id="seleccion" visible="false" rotation="-90 0 0"
+            geometry="primitive: ring; radiusInner: 0.033; radiusOuter: 0.039; segmentsTheta: 48"
+            material="shader: flat; color: #ffd166; transparent: true; opacity: 0.95; depthWrite: false"
+            animation="property: scale; from: 1 1 1; to: 1.22 1.22 1.22; dir: alternate; loop: true; dur: 650; easing: easeInOutSine"></a-entity>
+        </a-entity>
+      </a-entity>
+    </a-marker>
+
+    <a-entity id="camara" camera></a-entity>
+  </a-scene>
+
+  <!-- ===================== INTERFAZ COMPACTA (deja ver la mesa) ===================== -->
+  <div id="hud" class="hud">
+    <section class="panel mini-marcador">
+      <b>AR POOL <span class="ocho">8</span></b>
+      <span id="hud-turno">Tu turno</span>
+      <span><b id="hud-bolas">15</b> bolas</span>
+    </section>
+
+    <nav class="panel barra-mini">
+      <button id="btn-menos" class="icono" title="Mesa más pequeña"><span>−</span></button>
+      <button id="btn-mas" class="icono" title="Mesa más grande"><span>+</span></button>
+      <button id="btn-guia" class="icono" title="Línea guía"><span>⟶</span></button>
+      <button id="btn-reacomodar" class="icono" title="Armar triángulo"><span>△</span></button>
+      <button id="btn-sonido" class="icono" title="Sonido"><span id="ico-sonido">🔊</span></button>
+      <button id="btn-ayuda" class="icono" title="Ayuda"><span>?</span></button>
+      <a class="icono" href="index.html?v=6" title="Salir"><span>⎋</span></a>
+    </nav>
+
+    <section class="panel panel-controles">
+      <button id="btn-izq" class="ctl" aria-label="Girar taco a la izquierda">◀</button>
+      <button id="btn-golpear" class="ctl golpear">
+        <span class="carga"><span id="barra-fuerza" class="relleno"></span></span>
+        <span class="txt">MANTÉN PARA<br><b>GOLPEAR</b> <small id="hud-fuerza"></small></span>
+      </button>
+      <button id="btn-der" class="ctl" aria-label="Girar taco a la derecha">▶</button>
+    </section>
+
+    <!-- Aviso cuando la cámara no ve el marcador -->
+    <div id="buscar-marcador" class="buscar">
+      <div class="marco"><span></span><span></span><span></span><span></span></div>
+      <p><b>Apunta la cámara al marcador Hiro</b><br>
+        Imprímelo o ábrelo en otra pantalla: <a href="marcador.html" target="_blank">ver marcador</a></p>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="ficha-bola" class="panel ficha oculto"></div>
+
+    <div id="ayuda" class="modal oculto">
+      <div class="panel modal-caja">
+        <h2>Cómo jugar con el marcador</h2>
+        <table>
+          <tr><td>1</td><td>Pon el marcador Hiro sobre una mesa o el suelo (impreso o en la pantalla de un computador).</td></tr>
+          <tr><td>2</td><td>Apunta la cámara: la mesa de billar aparece encima y se queda pegada al marcador.</td></tr>
+          <tr><td>3</td><td>Muévete alrededor: el taco apunta desde donde estás hacia la bola blanca.</td></tr>
+          <tr><td>◀ ▶</td><td>Ajuste fino de la puntería.</td></tr>
+          <tr><td>GOLPEAR</td><td>Mantén para cargar fuerza y suelta para tirar.</td></tr>
+          <tr><td>− / +</td><td>Hacer la mesa más pequeña o más grande.</td></tr>
+          <tr><td>△</td><td>Volver a armar el triángulo.</td></tr>
+        </table>
+        <p class="nota">Consejo: con buena luz y el marcador sin reflejos el seguimiento es más estable. No tapes el marcador con la mano.</p>
+        <button id="btn-cerrar-ayuda" class="boton-principal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
