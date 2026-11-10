@@ -6,15 +6,27 @@ Se desarrolla en 6 etapas; cada una se puede probar sola y no rompe las anterior
 | Etapa | Contenido | Estado |
 |---|---|---|
 | 1 | Mesa 3D realista, 16 bolas, taco y cámara | ✅ **Terminada** |
-| 2 | Física: colisiones, bandas, troneras, fricción, efecto | Pendiente |
+| 2 | Física: colisiones, bandas, troneras, fricción, efecto | ✅ **Terminada** |
 | 3 | Reglas completas de 8 bolas y bot (fácil / normal / difícil) | Pendiente |
 | 4 | Servidor Node.js + Socket.IO, salas y multijugador online | Pendiente |
-| 5 | WebXR AR: hit-test, colocar la mesa, controles XR | Pendiente |
+| 5 | WebXR AR: hit-test, colocar la mesa, controles XR | ◐ Colocación AR y vista con cámara listas; faltan controladores de gafas |
 | 6 | Pulido gráfico, sonido espacial y optimización | Pendiente |
 
-> En la Etapa 1 el taco apunta, carga fuerza y **golpea** la blanca (registra dirección y fuerza),
-> pero las bolas todavía **no se mueven**: eso lo hace el motor de física de la Etapa 2.
-> Los botones "Jugar contra IA" y "Multijugador online" aparecen desactivados con su etapa.
+> **Ya se puede jugar**: el taco golpea la blanca y la física mueve las 16 bolas (choques, bandas,
+> troneras, fricción del paño y efecto). La blanca embocada vuelve a la cabecera.
+> Las reglas completas de 8 bolas, el bot y el multijugador llegan en las etapas 3 y 4.
+
+## Realidad aumentada: qué funciona en cada teléfono
+
+| Dispositivo | Botón ◎ | Qué hace |
+|---|---|---|
+| Android con Chrome (ARCore) | **Ver en AR** | **AR real WebXR**: detecta el suelo, aparece un aro verde, tocas la pantalla y la mesa queda anclada a escala real. Puedes caminar alrededor. |
+| Meta Quest / gafas con WebXR | **Ver en AR** | Igual que Android (passthrough). |
+| iPhone / iPad (Safari o Chrome) | **Cámara** | **Vista con cámara**: la cámara trasera es el fondo y el giroscopio mueve la vista. La mesa se queda en su sitio al **girar** el teléfono, pero **no** se ancla al suelo ni sigue tus pasos, porque Apple no ofrece WebXR en el navegador. |
+
+En AR y en la vista con cámara **el taco apunta desde donde estás tú hacia la bola blanca** (como en un billar
+real: te paras detrás de la bola). Con ◀ ▶ haces el ajuste fino. Los botones *Mover mesa*, *Escala* (100 %, 50 %, 25 %)
+y *Salir* aparecen a la izquierda.
 
 ---
 
@@ -68,14 +80,17 @@ Cámaras: **Libre** (orbita la mesa), **Tiro** (cámara de asistencia detrás de
 - [ ] La mesa tiene paño verde, madera con vetas, 6 troneras con fondo, diamantes y patas torneadas.
 - [ ] Hay 16 bolas: la 1 en el vértice, la 8 en el centro, rayadas con franja, números legibles.
 - [ ] El taco gira alrededor de la blanca y la línea guía cambia; la bola fantasma marca el primer contacto.
-- [ ] Al mantener ESPACIO el taco retrocede y la barra de fuerza sube; al soltar avanza y toca la blanca.
+- [ ] Al mantener ESPACIO el taco retrocede y la barra de fuerza sube; al soltar avanza, golpea y las bolas se mueven.
+- [ ] Las bolas chocan, rebotan en las bandas, caen en las troneras y se detienen; luego el taco vuelve.
+- [ ] El botón △ vuelve a armar el triángulo.
 - [ ] El contador **Golpes** aumenta y sigue igual después de recargar (LocalStorage).
 - [ ] Las tres cámaras funcionan; la calidad Baja/Media/Alta cambia sombras y nitidez.
 - [ ] El chip inferior izquierdo dice honestamente si el dispositivo tiene WebXR AR.
 
-**Pruebas automáticas** (medidas, triángulo y puntería):
+**Pruebas automáticas**:
 ```bash
-node tests/etapa1.test.js      # 18 pruebas
+node tests/etapa1.test.js      # 18 pruebas: medidas, triángulo y puntería
+node tests/etapa2.test.js      # 15 pruebas: fricción, choques, bandas, troneras, saque reproducible
 ```
 
 ## 5. Estructura del proyecto
@@ -91,17 +106,22 @@ ar-pool-8/
 │   │   ├── config.js        Medidas reales: mesa de 9 pies, bolas de 57.15 mm, taco de 147 cm
 │   │   ├── rack.js          Armado del triángulo según reglamento WPA
 │   │   ├── aim.js           Línea guía y cálculo del primer contacto
+│   │   ├── geometria-mesa.js Bandas y troneras compartidas por el dibujo y la física
 │   │   └── textures.js      Texturas procedurales (fieltro, madera, bolas) y mapa de entorno PBR
+│   ├── fisica/motor.js      Motor de física de paso fijo (1/500 s), reproducible
 │   └── components/          Componentes A-Frame (Entity-Component-System)
 │       ├── mesa-billar.js   Mesa completa: paño, bandas, baranda, troneras, gabinete, patas
 │       ├── bola-billar.js   bola-billar + triangulo-bolas
 │       ├── taco-billar.js   Taco 3D, retroceso, golpe, guía y bola fantasma
 │       ├── camara-orbita.js Cámaras libre / tiro / superior con ratón y táctil
-│       └── escena-realista.js  Tono ACES, reflejos, calidad gráfica y lámpara
-├── tests/etapa1.test.js     Pruebas automáticas
+│       ├── escena-realista.js  Tono ACES, reflejos, calidad gráfica y lámpara
+│       ├── fisica-mesa.js   Conecta la física con las bolas, caídas y sonidos
+│       ├── sonido-billar.js Sonidos sintetizados con audio espacial
+│       └── modo-ar.js       AR WebXR con hit-test y vista con cámara (iPhone)
+├── tests/                   Pruebas automáticas (etapa1, etapa2)
 └── vendor/aframe.min.js     A-Frame 1.6.0 (MIT)
 ```
-En las próximas etapas se agregan `js/fisica/`, `js/reglas/`, `js/ia/`, `js/red/` y `servidor/`.
+En las próximas etapas se agregan `js/reglas/`, `js/ia/`, `js/red/` y `servidor/`.
 
 ## 6. Requisitos de la clase y dónde están
 
@@ -123,7 +143,8 @@ En las próximas etapas se agregan `js/fisica/`, `js/reglas/`, `js/ia/`, `js/red
 - **Pantalla negra o "loading" infinito:** revisa que la carpeta `vendor/` se haya subido. En el navegador, pulsa F12 → pestaña *Console* y busca la línea roja: dice el archivo y la línea.
 - **Se ve todo muy lento:** en el juego pulsa ✦ hasta **Baja**.
 - **"AR requiere HTTPS":** estás abriendo el archivo directo o por `http://`. Usa GitHub Pages.
-- **iPhone:** Safari no tiene WebXR AR. El juego funciona en modo 3D táctil y lo indica en pantalla; no se presenta como realidad aumentada.
+- **iPhone y la cámara no abre:** acepta los dos permisos (cámara y "movimiento y orientación"). Si los negaste, ve a Ajustes → Safari (o Chrome) → Cámara / Movimiento, o borra los datos del sitio y vuelve a entrar.
+- **iPhone:** no tiene WebXR AR. La vista con cámara funciona, pero la mesa no se ancla al suelo; el juego lo dice en pantalla.
 
 ## Licencias
 Código del proyecto: MIT. A-Frame: MIT. Todas las texturas y modelos se generan por código (no hay recursos de terceros).

@@ -83,15 +83,6 @@
     return out;
   }
 
-  function ensureCCW(pts) {
-    var a = 0;
-    for (var i = 0; i < pts.length; i++) {
-      var p = pts[i], q = pts[(i + 1) % pts.length];
-      a += p[0] * q[1] - q[0] * p[1];
-    }
-    return a < 0 ? pts.slice().reverse() : pts;
-  }
-
   // Extruye una forma 2D (plano XY) hacia arriba (eje Y del mundo)
   function extrudeUp(shape, yBottom, height, bevel, material) {
     var geo = new THREE.ExtrudeGeometry(shape, {
@@ -155,7 +146,7 @@
 
       // ---------------- Paño (cama de pizarra cubierta de fieltro) ----------------
       var clothShape = new THREE.Shape();
-      var cut = pocketOutline(clothShape, bx, by, pockets, true);
+      pocketOutline(clothShape, bx, by, pockets, true);
       var cloth = extrudeUp(clothShape, -0.03, 0.03, 0, matFelt);
       cloth.castShadow = false;
       cloth.name = 'pano';
@@ -198,27 +189,9 @@
       group.add(extrudeUp(moldShape, T.railBottom - 0.03, 0.03, 0.004, matWoodDark));
 
       // ---------------- Bandas de goma (6 tramos) ----------------
-      var mC = T.cornerMouth / Math.SQRT2;   // retroceso de la nariz en esquina
-      var sideNose = T.sideMouth / 2;
+      // Polígonos de las bandas: los mismos que usa el motor de física
       var cB = 0.006;                        // bisel que redondea la nariz
-      var base = [ // tramo largo inferior-izquierdo (coordenadas del plano)
-        [-(pockets.corner.cx - cut.eX), -by],
-        [-cut.aS, -by],
-        [-sideNose, -hy],
-        [-(hx - mC), -hy]
-      ];
-      var shortLeft = [
-        [-bx, -(pockets.corner.cy - cut.eY)],
-        [-hx, -(hy - mC)],
-        [-hx, (hy - mC)],
-        [-bx, (pockets.corner.cy - cut.eY)]
-      ];
-      var mirrors = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
-      var polys = mirrors.map(function (m) {
-        return ensureCCW(base.map(function (p) { return [p[0] * m[0], p[1] * m[1]]; }));
-      });
-      polys.push(ensureCCW(shortLeft));
-      polys.push(ensureCCW(shortLeft.map(function (p) { return [-p[0], p[1]]; })));
+      var polys = window.ARPOOL.geometria.construir().bandas;
       var cushionH = T.cushionTop;
       polys.forEach(function (pts) {
         var inset = insetConvex(pts, cB);

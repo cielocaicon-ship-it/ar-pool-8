@@ -170,3 +170,61 @@ button { font: inherit; color: inherit; }
 /* Cursor de la escena */
 .juego canvas.a-canvas { cursor: grab; }
 .juego canvas.a-canvas:active { cursor: grabbing; }
+
+/* ---------------------------------------------------------------- Vista real (AR / cámara) */
+#video-camara {
+  position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  z-index: 0; display: none; background: #000;
+}
+body.vista-camara #video-camara { display: block; }
+a-scene { position: relative; z-index: 1; }
+body.vista-real { background: transparent; }
+
+.icono.destacado { background: rgba(57, 217, 138, 0.2); box-shadow: inset 0 0 0 1px rgba(57, 217, 138, .45); }
+.icono.destacado span { color: var(--verde); font-size: 20px; }
+.icono:disabled { opacity: .35; cursor: not-allowed; }
+.chip.medio { color: var(--oro); border-color: rgba(255, 209, 102, .4); }
+
+.panel-ar {
+  position: absolute; left: 14px; bottom: max(64px, calc(env(safe-area-inset-bottom) + 50px));
+  display: flex; flex-direction: column; gap: 6px; padding: 8px;
+}
+.ctl-ar {
+  border: 1px solid var(--borde); background: rgba(255, 255, 255, .06); border-radius: 12px;
+  padding: 10px 14px; font-size: 13px; cursor: pointer; text-align: left; white-space: nowrap;
+}
+.ctl-ar.salir { color: #ffb4a8; }
+.ctl-ar:active { background: rgba(57, 217, 138, .2); }
+
+.guia-ar {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
+  max-width: min(520px, 86vw); padding: 14px 20px; border-radius: 16px; text-align: center;
+  font-size: 15px; line-height: 1.5; background: rgba(6, 12, 9, .72); border: 1px solid rgba(57, 217, 138, .4);
+  pointer-events: none; backdrop-filter: blur(8px);
+}
+
+/* Celular en horizontal (poca altura): todo más compacto para no tapar la mesa */
+@media (max-height: 520px) {
+  .panel-marcador { padding: 6px 10px; min-width: 0; font-size: 11px; top: 8px; left: 8px; }
+  .panel-marcador .fila { padding: 1px 0; gap: 10px; }
+  .panel-marcador .fila:nth-child(n+5) { display: none; }
+  .marca { font-size: 15px; margin-bottom: 2px; }
+  .ocho { width: 20px; height: 20px; font-size: 11px; }
+  .panel-botones { top: 8px; right: 8px; padding: 3px; gap: 2px; }
+  .icono { min-width: 38px; height: 38px; padding: 2px; }
+  .icono small { display: none; }
+  .icono span { font-size: 16px; }
+  .panel-tiro { top: auto; bottom: 8px; right: 8px; transform: none; padding: 8px; gap: 6px; flex-direction: row; align-items: flex-end; }
+  .brujula svg { width: 46px; height: 46px; }
+  .valor { font-size: 14px; }
+  .barra { height: 64px; width: 14px; }
+  .panel-controles { bottom: 8px; padding: 5px; gap: 6px; }
+  .ctl { width: 50px; height: 50px; font-size: 18px; }
+  .ctl.golpear { width: 120px; }
+  .ctl.golpear b { font-size: 16px; }
+  .chip { bottom: 8px; left: 8px; font-size: 10.5px; max-width: 30vw; }
+  .panel-ar { bottom: 50px; left: 8px; }
+  .ctl-ar { padding: 7px 10px; font-size: 12px; }
+  .ficha { top: auto; bottom: 64px; left: 50%; transform: translateX(-50%); }
+  .toast { top: 54px; font-size: 13px; }
+}

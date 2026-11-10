@@ -153,6 +153,14 @@
       return true;
     },
     ocupado: function () { return this.estado !== 'reposo' && this.estado !== 'cargando'; },
+    conFisica: function () { return !!this.el.sceneEl.querySelector('[fisica-mesa]'); },
+    reposo: function () {
+      this.estado = 'reposo'; this.potencia = 0; this.pull = 0;
+      this.el.emit('taco-potencia', { potencia: 0 });
+      this.setAngulo(this.angulo);
+    },
+    /** La física avisa que todo se detuvo: el taco vuelve junto a la blanca */
+    liberar: function () { if (this.estado === 'esperando' || this.estado === 'contacto') this.reposo(); },
 
     posBlanca: function () {
       var o = this.data.objetivo || document.getElementById('bola-0');
@@ -173,23 +181,27 @@
           this.pull = this.pullInicio + (-C.restGap - this.pullInicio) * easeInQuad(k);
           if (k >= 1) {
             var dir = AIM.dirFromAngle(this.angulo);
-            this.el.emit('taco-golpe', { angulo: this.angulo, potencia: this.potencia, direccion: dir });
+            this.el.emit('taco-golpe', { angulo: this.angulo, potencia: this.potencia, direccion: dir, efecto: this.efecto || { lado: 0, alto: 0 } });
             this.estado = 'contacto';
             this.t = 0;
           }
           break;
-        case 'contacto':
+        case 'contacto':   // seguimiento: el taco continúa un poco tras el impacto
           this.t += dt;
-          if (this.t > 0.45) { this.estado = 'retorno'; this.t = 0; }
+          var kc = Math.min(1, this.t / 0.14);
+          this.pull = -C.restGap - (0.03 + 0.07 * this.potencia) * easeOutCubic(kc);
+          if (this.t > 0.32) {
+            if (this.conFisica()) { this.estado = 'esperando'; }
+            else { this.estado = 'retorno'; this.t = 0; }
+          }
+          break;
+        case 'esperando':  // las bolas se mueven: el taco se aparta
           break;
         case 'retorno':
           this.t += dt;
           var kr = Math.min(1, this.t / 0.5);
-          this.pull = -C.restGap + (0 + C.restGap) * easeOutCubic(kr);
-          if (kr >= 1) {
-            this.estado = 'reposo'; this.potencia = 0; this.pull = 0;
-            this.el.emit('taco-potencia', { potencia: 0 });
-          }
+          this.pull = this.pull + (0 - this.pull) * easeOutCubic(kr);
+          if (kr >= 1) this.reposo();
           break;
       }
       this.updatePose();
@@ -198,6 +210,7 @@
     updatePose: function () {
       var b = this.posBlanca();
       this.pivot.position.set(b.x, b.y, b.z);
+      this.pivot.visible = this.estado !== 'esperando';
       this.pivot.rotation.y = this.angulo * Math.PI / 180;
       this.slide.position.x = -cfg.CUE.restGap - this.pull;
       this.updateGuide(b);

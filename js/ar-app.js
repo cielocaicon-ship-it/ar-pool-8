@@ -5,7 +5,8 @@
      · Controles de teclado, ratón y táctiles para el taco
      · Eventos del raycaster (clic en bolas y en el paño)
      · Indicadores de fuerza y dirección
-     · Detección de compatibilidad WebXR AR (la sesión AR llega en la Etapa 5)
+     · Estado del tiro (física), sonido y botón para volver a armar
+     · Botón AR: AR WebXR real o vista con cámara (iPhone)
    ========================================================================== */
 (function () {
   'use strict';
@@ -41,7 +42,7 @@
   function guardar(clave, valor) {
     try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* modo privado */ }
   }
-  var prefs = leer(CLAVE_PREFS, { calidad: 'media', camara: 'libre', guia: true });
+  var prefs = leer(CLAVE_PREFS, { calidad: 'media', camara: 'libre', guia: true, sonido: true });
   var stats = leer(CLAVE_STATS, { golpesPractica: 0, sesiones: 0 });
   stats.sesiones++;
   guardar(CLAVE_STATS, stats);
@@ -59,6 +60,10 @@
     var tacoEl = $('taco'), camEl = $('camara'), selEl = $('seleccion'), mesaEl = $('mesa');
     var taco = tacoEl.components['taco-billar'];
     var cam = camEl.components['camara-orbita'];
+    var fisica = mesaEl.components['fisica-mesa'];
+    var ar = scene.components['modo-ar'];
+    var SND = window.ARPOOL.sonido;
+    function enVistaReal() { return ar && ar.modo !== 'escritorio'; }
 
     var NOMBRES_CAM = { libre: 'Libre', tiro: 'Tiro', superior: 'Superior' };
     var NOMBRES_CAL = { baja: 'Baja', media: 'Media', alta: 'Alta' };
@@ -72,6 +77,12 @@
     $('lbl-guia').textContent = prefs.guia ? 'Guía sí' : 'Guía no';
     $('hud-jugador').textContent = localStorage.getItem(CLAVE_NOMBRE) || 'Jugador';
     $('hud-golpes').textContent = stats.golpesPractica;
+    function pintarSonido() {
+      SND.setActivo(prefs.sonido);
+      $('ico-sonido').textContent = prefs.sonido ? '🔊' : '🔇';
+      $('lbl-sonido').textContent = prefs.sonido ? 'Sonido' : 'Silencio';
+    }
+    pintarSonido();
 
     // ------------------------------------------------------- Mensajes
     var toastTimer = null;
@@ -95,16 +106,36 @@
       $('barra-fuerza').style.height = p + '%';
       $('hud-fuerza').textContent = p + '%';
     });
-    tacoEl.addEventListener('taco-golpe', function (e) {
+    tacoEl.addEventListener('taco-golpe', function () {
       stats.golpesPractica++;
       guardar(CLAVE_STATS, stats);
       $('hud-golpes').textContent = stats.golpesPractica;
-      var c = taco.ultimoContacto;
-      var destino = c ? (c.tipo === 'bola' ? 'la bola ' + c.bola : 'la banda') : '—';
-      aviso('Golpe registrado · ' + Math.round(e.detail.potencia * 100) + '% de fuerza · ' +
-        e.detail.angulo.toFixed(1) + '°<br><small>Primer contacto previsto: ' + destino +
-        '. Las bolas se moverán cuando se integre la física (Etapa 2).</small>', 3600);
+      ocultarFicha();
     });
+
+    // ------------------------------------------------------- Física: estado del tiro
+    mesaEl.addEventListener('tiro-iniciado', function () {
+      $('hud-turno').textContent = 'Bolas en movimiento…';
+    });
+    var nombresBola = function (lista) {
+      return lista.map(function (n) { return n === 0 ? 'la blanca' : 'la ' + n; }).join(', ');
+    };
+    mesaEl.addEventListener('bolas-quietas', function (e) {
+      var r = e.detail;
+      taco.liberar();
+      $('hud-turno').textContent = 'Tu turno';
+      if (r.reacomodo) { $('hud-bolas').textContent = 15; aviso('Triángulo armado', 1400); return; }
+      if (r.enMesa !== undefined) $('hud-bolas').textContent = r.enMesa;
+      var objetivo = (r.embocadas || []).filter(function (n) { return n !== 0; });
+      var msg = [];
+      if (objetivo.length) msg.push('¡Embocaste ' + nombresBola(objetivo) + '!');
+      if (r.blancaEmbocada) msg.push('Bola blanca embocada: vuelve a la cabecera');
+      else if (r.primerContacto === null) msg.push('La blanca no tocó ninguna bola');
+      if (r.enMesa === 0) msg.push('Mesa limpia 🎱 · pulsa △ para armar de nuevo');
+      if (msg.length) aviso(msg.join('<br>'), 2600);
+      SND.turno();
+    });
+
     taco.setAngulo(taco.angulo);
 
     // ------------------------------------------------------- Botones
@@ -127,6 +158,16 @@
       tacoEl.setAttribute('taco-billar', 'guia', prefs.guia);
       $('lbl-guia').textContent = prefs.guia ? 'Guía sí' : 'Guía no';
     }
+    function alternarSonido() {
+      prefs.sonido = !prefs.sonido; guardar(CLAVE_PREFS, prefs); pintarSonido();
+    }
+    $('btn-sonido').addEventListener('click', alternarSonido);
+    function reacomodar() {
+      if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
+      fisica.reacomodar();
+    }
+    $('btn-reacomodar').addEventListener('click', reacomodar);
+
     $('btn-calidad').addEventListener('click', function () {
       var orden = ['baja', 'media', 'alta'];
       prefs.calidad = orden[(orden.indexOf(prefs.calidad) + 1) % 3];
@@ -152,6 +193,9 @@
       if (!cargando) return;
       cargando = false;
       $('btn-golpear').classList.remove('activo');
+      // la fuerza depende del tiempo presionado (no de los FPS)
+      potencia = Math.min(1, (performance.now() - inicioCarga) / 1300);
+      taco.cargar(potencia);
       if (!taco.soltar()) aviso('Mantén presionado más tiempo para cargar fuerza', 1500);
     }
 
@@ -160,9 +204,12 @@
     (function bucle(ahora) {
       var dt = Math.min((ahora - ultimo) / 1000, 0.05);
       ultimo = ahora;
-      if (giro !== 0) taco.girar(giro * (fino ? 6 : 50) * dt);
+      if (giro !== 0) {
+        if (enVistaReal()) ar.ajustarPunteria(giro * (fino ? 4 : 20) * dt);
+        else taco.girar(giro * (fino ? 6 : 50) * dt);
+      }
       if (cargando) {
-        potencia = Math.min(1, (ahora - inicioCarga) / 1300);   // 1.3 s para fuerza máxima (independiente de los FPS)
+        potencia = Math.min(1, (performance.now() - inicioCarga) / 1300);   // 1.3 s para fuerza máxima (independiente de los FPS)
         taco.cargar(potencia);
       }
       requestAnimationFrame(bucle);
@@ -190,6 +237,8 @@
         case 'Digit2': camEl.setAttribute('camara-orbita', 'modo', 'tiro'); break;
         case 'Digit3': camEl.setAttribute('camara-orbita', 'modo', 'superior'); break;
         case 'KeyG': alternarGuia(); break;
+        case 'KeyR': reacomodar(); break;
+        case 'KeyM': alternarSonido(); break;
         case 'KeyH': ayuda($('ayuda').classList.contains('oculto')); break;
         case 'Escape': ayuda(false); break;
       }
@@ -204,7 +253,7 @@
     // ------------------------------------------------------- Raycaster + cursor
     // Clic en el paño: apunta el taco a ese punto (si no fue un arrastre de cámara)
     $('zona-apuntado').addEventListener('click', function (e) {
-      if (window.ARPOOL.input.arrastro || taco.ocupado()) return;
+      if (window.ARPOOL.input.arrastro || taco.ocupado() || enVistaReal()) return;
       var hit = e.detail.intersection;
       if (!hit) return;
       var local = mesaEl.object3D.worldToLocal(hit.point.clone());
@@ -233,14 +282,78 @@
     scene.addEventListener('raycaster-intersection', function () { scene.canvas.style.cursor = 'pointer'; });
     scene.addEventListener('raycaster-intersection-cleared', function () { scene.canvas.style.cursor = 'grab'; });
 
-    // ------------------------------------------------------- Compatibilidad WebXR
-    detectarAR().then(function (r) {
+    // ------------------------------------------------------- Realidad aumentada
+    var capacidades = { webxr: false, camara: false };
+    ar.capacidades().then(function (c) {
+      capacidades = c;
       var chip = $('estado-ar');
-      chip.textContent = r.texto;
-      chip.className = 'chip ' + r.clase;
+      if (c.webxr) {
+        $('lbl-ar').textContent = 'Ver en AR';
+        chip.textContent = 'AR WebXR disponible · pulsa ◎';
+        chip.className = 'chip si';
+      } else if (c.camara) {
+        $('lbl-ar').textContent = 'Cámara';
+        chip.textContent = c.ios
+          ? 'iPhone: sin WebXR · ◎ abre la vista con cámara'
+          : 'Sin WebXR AR · ◎ abre la vista con cámara';
+        chip.className = 'chip medio';
+      } else {
+        $('btn-ar').disabled = true;
+        chip.textContent = window.isSecureContext ? 'Sin cámara ni WebXR · modo 3D' : 'AR y cámara requieren HTTPS · modo 3D';
+        chip.className = 'chip no';
+      }
     });
 
-    aviso('Mesa de práctica lista · Pulsa <b>H</b> o <b>?</b> para ver los controles', 3200);
+    $('btn-ar').addEventListener('click', function () {
+      if (enVistaReal()) { ar.salir(); return; }
+      if (fisica.enMovimiento()) { aviso('Espera a que las bolas se detengan', 1400); return; }
+      if (capacidades.webxr) ar.entrarWebXR();
+      else if (capacidades.camara) {
+        aviso('Abriendo la cámara… acepta los permisos de cámara y movimiento', 2600);
+        ar.entrarCamara();
+      }
+    });
+    $('btn-salir-ar').addEventListener('click', function () { ar.salir(); });
+    $('btn-mover').addEventListener('click', function () { ar.moverMesa(); });
+    $('btn-escala').addEventListener('click', function () {
+      var e = ar.cambiarEscala();
+      $('lbl-escala').textContent = Math.round(e * 100) + '%';
+      aviso(e === 1 ? 'Escala real (mesa de 9 pies)' : 'Escala ' + Math.round(e * 100) + '% (mesa en miniatura)', 1500);
+    });
+
+    function guiaAR(texto) {
+      var g = $('guia-ar');
+      g.innerHTML = texto || '';
+      g.classList.toggle('oculto', !texto);
+    }
+    scene.addEventListener('modo-vista', function (e) {
+      var m = e.detail.modo;
+      $('panel-ar').classList.toggle('oculto', m === 'escritorio');
+      $('btn-camara').disabled = m !== 'escritorio';
+      $('lbl-ar').textContent = m === 'escritorio' ? (capacidades.webxr ? 'Ver en AR' : 'Cámara') : 'Salir';
+      $('lbl-escala').textContent = '100%';
+      ar.centrarPunteria();
+      ocultarFicha();
+      if (m === 'camara') {
+        guiaAR('<b>Vista con cámara</b> · gira el teléfono para mirar la mesa<br>' +
+          '1 dedo: girar la mesa · 2 dedos: acercar o alejar · el taco apunta desde donde miras');
+        setTimeout(function () { guiaAR(''); }, 7000);
+      } else if (m === 'escritorio') {
+        guiaAR('');
+      }
+    });
+    scene.addEventListener('ar-colocando', function (e) {
+      guiaAR(e.detail.hitTest
+        ? 'Mueve el teléfono despacio apuntando al <b>suelo</b>.<br>Cuando veas el aro verde, <b>toca la pantalla</b> para colocar la mesa.'
+        : 'Toca la pantalla para colocar la mesa delante de ti.');
+    });
+    scene.addEventListener('mesa-colocada', function () {
+      if (ar.modo === 'webxr') {
+        guiaAR('Mesa colocada · camina alrededor: el taco apunta desde donde estás hacia la blanca');
+        setTimeout(function () { guiaAR(''); }, 4500);
+      }
+    });
+    scene.addEventListener('ar-error', function (e) { aviso(e.detail.mensaje, 4500); });
   }
 
   // Comprueba si el navegador ofrece sesiones 'immersive-ar' de WebXR

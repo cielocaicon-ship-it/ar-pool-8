@@ -93,10 +93,10 @@
       </header>
 
       <section class="modos" aria-label="Modos de juego">
-        <a class="modo principal" href="ar-experiencia.html?modo=practica">
+        <a class="modo principal" href="ar-experiencia.html">
           <span class="estado listo">DISPONIBLE</span>
-          <span class="nombre">MESA DE PRÁCTICA</span>
-          <span class="desc">Mesa profesional de 9 pies con las 16 bolas, taco y cámaras. Apunta, carga la fuerza y golpea la blanca.</span>
+          <span class="nombre">JUGAR</span>
+          <span class="desc">Mesa de 9 pies con física real: apunta, carga la fuerza y emboca. Colócala en tu habitación con AR (Android) o mírala con la cámara (iPhone).</span>
         </a>
         <div class="modo" aria-disabled="true" title="Se habilita en la Etapa 3">
           <span class="estado pronto">ETAPA 3</span>
@@ -127,10 +127,10 @@
 
       <nav class="etapas" aria-label="Progreso del desarrollo">
         <span class="hecha">✓ 1 · Mesa, bolas, taco y cámara</span>
-        <span>2 · Física</span>
+        <span class="hecha">✓ 2 · Física</span>
         <span>3 · Reglas y bot</span>
         <span>4 · Multijugador</span>
-        <span>5 · WebXR AR</span>
+        <span class="hecha">◐ 5 · AR y cámara</span>
         <span>6 · Pulido</span>
       </nav>
     </div>
@@ -156,11 +156,11 @@
       var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (!window.isSecureContext) msg(false, 'WebXR exige HTTPS. Abre el juego desde una dirección https:// para usar AR.');
       else if (!navigator.xr) msg(false, ios
-        ? 'Safari en iPhone/iPad no ofrece WebXR AR. Podrás jugar en modo 3D táctil; no es realidad aumentada.'
+        ? 'iPhone/iPad no ofrece WebXR. Puedes usar la vista con cámara (la mesa sigue el giro del teléfono, sin anclarse al suelo).'
         : 'Este navegador no ofrece WebXR. Jugarás en modo 3D (no es realidad aumentada).');
       else navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
-        msg(ok, ok ? 'Tu dispositivo admite sesiones immersive-ar. La colocación de la mesa en tu habitación llega en la Etapa 5.'
-                   : 'Hay WebXR pero sin sesiones AR. Jugarás en modo 3D (no es realidad aumentada).');
+        msg(ok, ok ? 'Tu dispositivo admite AR WebXR: podrás colocar la mesa sobre el suelo de tu habitación.'
+                   : 'Hay WebXR pero sin sesiones AR. Puedes usar la vista con cámara o el modo 3D.');
       }).catch(function () { msg(false, 'No se pudo comprobar. Se usará el modo 3D.'); });
     })();
   </script>
