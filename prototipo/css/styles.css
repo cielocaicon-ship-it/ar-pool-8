@@ -1,0 +1,54 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #0d1418; color: #fff; overflow: hidden; }
+a { color: #8df0d0; }
+
+/* Escena */
+a-scene { position: fixed !important; inset: 0; width: 100% !important; height: 100% !important; }
+
+/* Interfaz superpuesta */
+#ui { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;
+  padding: max(env(safe-area-inset-top), 10px) 10px max(env(safe-area-inset-bottom), 10px); }
+#ui > * { pointer-events: auto; }
+.glass { background: rgba(9, 22, 27, .82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid #ffffff2a; border-radius: 14px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; }
+header a { font-weight: 800; text-decoration: none; white-space: nowrap; }
+#status { font-size: 12px; text-align: right; }
+#errors { margin-top: 6px; padding: 8px 12px; font-size: 12px; background: rgba(120, 20, 20, .9); border-radius: 12px; }
+#info { align-self: center; margin-top: auto; margin-bottom: 6px; padding: 6px 12px; font-size: 13px; text-align: center; }
+.panel { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; gap: 6px; align-items: center; }
+.grow { flex: 1; font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+input[type=range] { width: 100%; accent-color: #61d9bb; height: 26px; }
+button, select { border: 1px solid #8df0d055; border-radius: 10px; background: #193d42; color: #fff; padding: 10px 12px; font-weight: 700; font-size: 14px; cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+button:active { transform: scale(.97); }
+.mini { width: 44px; padding: 10px 0; }
+.primary { flex: 1; background: #167e61; font-size: 16px; }
+#help { margin: 0; font-size: 11px; line-height: 1.35; color: #cfe3e3; }
+.size { font-size: 12px; min-width: 38px; text-align: center; }
+@media (min-width: 700px) { #ui { max-width: 440px; } }
+@media (orientation: landscape) and (max-height: 500px) {
+  #help { display: none; }
+  .panel { gap: 4px; padding: 6px; }
+  #ui { max-width: 360px; }
+}
+
+/* Página de inicio */
+.home { position: static; overflow: auto; min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: radial-gradient(circle at 50% 0%, #17473a, #0d1418 60%); }
+.card { max-width: 520px; width: 100%; padding: 22px; }
+.card h1 { margin: 0 0 4px; font-size: 30px; color: #8df0d0; }
+.card p, .card li { line-height: 1.5; color: #d8e8e8; font-size: 15px; }
+.big { display: block; text-align: center; text-decoration: none; margin: 12px 0; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 18px; color: #fff; background: #167e61; border: 1px solid #8df0d070; }
+.big.alt { background: #304c73; }
+.big.ghost { background: transparent; font-size: 15px; }
+small { color: #9bb; }
+
+/* Página del marcador */
+.marker-page { background: #fff; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; height: 100%; }
+.marker-page img { width: min(80vw, 80vh); image-rendering: pixelated; }
+.marker-page a { color: #000; }
+header .mini { width: 38px; padding: 6px 0; font-size: 16px; }
+#status { flex: 1; }
+.compact .panel .row:not(.keep), .compact #help { display: none; }
+/* En AR el fondo debe ser transparente para ver el video de la cámara (AR.js lo pone detrás del canvas) */
+html.ar-mode, html.ar-mode body { background: transparent !important; }
+.a-enter-vr, .a-enter-ar, .a-orientation-modal { display: none !important; }

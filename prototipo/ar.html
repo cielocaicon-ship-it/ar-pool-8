@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es" class="ar-mode">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>AR Pool 8 · Realidad aumentada</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="lib/aframe.min.js"></script>
+<script src="lib/aframe-ar.js"></script>
+</head>
+<body data-mode="ar">
+<div id="ui">
+  <div>
+    <header class="glass"><a href="index.html">🎱 AR POOL 8</a><span id="status">Cargando…</span><button id="toggleUI" class="mini" aria-label="Mostrar u ocultar controles">☰</button></header>
+    <div id="errors" hidden></div>
+  </div>
+  <div id="info" class="glass">Cargando…</div>
+  <div class="panel glass">
+    <div class="row">
+      <button id="aimL" class="mini" aria-label="Girar a la izquierda">◀</button>
+      <label class="grow">Dirección <span id="angleValue">0.0°</span><input id="angle" type="range" min="-180" max="180" step="0.5" value="0"></label>
+      <button id="aimR" class="mini" aria-label="Girar a la derecha">▶</button>
+    </div>
+    <div class="row"><label class="grow">Potencia <span id="powerValue">40%</span><input id="power" type="range" min="1" max="100" value="40"></label></div>
+    <div class="row keep">
+      <button id="shoot" class="primary">🎱 GOLPEAR</button>
+      <button id="bot">🤖 Bot</button>
+      <select id="level" aria-label="Nivel del bot"><option value="0">Fácil</option><option value="1" selected>Medio</option><option value="2">Difícil</option></select>
+      <button id="reset" aria-label="Reiniciar">↻</button>
+    </div>
+    <div class="row">
+      <button id="smaller">− Mesa</button><span id="sizeValue" class="size">1.0×</span><button id="bigger">+ Mesa</button>
+      <a href="3d.html" style="margin-left:auto;font-size:13px">Vista 3D</a>
+    </div>
+    <p id="help">Permite la cámara y apunta al marcador HIRO. Toca o arrastra sobre la mesa para apuntar. ◀ ▶ ajustan la dirección con precisión.</p>
+  </div>
+</div>
+
+<a-scene embedded vr-mode-ui="enabled: false" loading-screen="enabled: false" device-orientation-permission-ui="enabled: false"
+  renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true"
+  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; cameraParametersUrl: data/camera_para.dat">
+  <a-marker id="marker" type="pattern" url="data/patt.hiro" emitevents="true"
+    smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="4">
+    <a-entity id="tableRoot" scale="0.6 0.6 0.6"></a-entity>
+  </a-marker>
+  <a-entity camera></a-entity>
+  <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+  <a-entity light="type: directional; intensity: 1.0" position="1 4 2"></a-entity>
+</a-scene>
+<script src="js/game.js"></script>
+</body>
+</html>
