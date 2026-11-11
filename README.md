@@ -17,12 +17,6 @@ Videojuego de pool americano de 8 bolas hecho con **A-Frame 1.6 + Three.js + Web
 > troneras, fricción del paño y efecto). La blanca embocada vuelve a la cabecera.
 > Las reglas completas de 8 bolas, el bot y el multijugador llegan en próximas versiones.
 
-
-## Prototipo con marcador HIRO (versión 0.2)
-
-En la carpeta `prototipo/` está la versión corregida del primer prototipo (AR.js + marcador HIRO, vista 3D y bot de práctica).
-Se abre en `https://cielocaicon-ship-it.github.io/ar-pool-8/prototipo/` y su marcador está en `prototipo/marcador.html`.
-
 ## Escanear marcador (modo principal, funciona en iPhone y Android)
 
 1. Abre `marcador.html` en un computador (o imprímelo) para tener el **marcador Hiro**.
